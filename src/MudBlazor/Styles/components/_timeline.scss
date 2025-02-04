@@ -1,4 +1,4 @@
-﻿
+
 .mud-timeline {
   position: relative;
   display: flex;
@@ -22,16 +22,16 @@
     padding-bottom: 24px;
 
     .mud-timeline-item-content {
-      max-width: calc(50% - 48px);
+      max-width: calc(50% - 24px);
     }
 
     .mud-timeline-item-divider {
-      min-width: 96px;
+      min-width: 48px;
     }
 
     .mud-timeline-item-opposite {
       flex: 1 1 auto;
-      max-width: calc(50% - 48px);
+      max-width: calc(50% - 24px);
     }
   }
 }
@@ -55,11 +55,11 @@
     min-width: 0;
 
     .mud-timeline-item-content {
-      max-height: calc(50% - 48px);
+      max-height: calc(50% - 24px);
     }
 
     .mud-timeline-item-divider {
-      min-height: 96px;
+      min-height: 48px;
     }
   }
 }
@@ -155,12 +155,12 @@
   &.mud-timeline-position-start {
     &::before {
       right: auto;
-      left: 47px;
+      left: 23px;
     }
 
     &.mud-timeline-rtl {
       &::before {
-        right: 47px;
+        right: 23px;
         left: auto;
       }
     }
@@ -172,13 +172,13 @@
 
   &.mud-timeline-position-end {
     &::before {
-      right: 47px;
+      right: 23px;
       left: auto;
     }
 
     &.mud-timeline-rtl {
       &::before {
-        left: 47px;
+        left: 23px;
         right: auto;
       }
     }
@@ -191,7 +191,7 @@
   &.mud-timeline-position {
     &-start, &-end {
       .mud-timeline-item-content {
-        max-width: calc(100% - 96px);
+        max-width: calc(100% - 48px);
       }
 
       .mud-timeline-item-opposite {
@@ -269,7 +269,7 @@
 
   &.mud-timeline-position-top {
     &::before {
-      top: 47px;
+      top: 23px;
       bottom: auto;
     }
 
@@ -281,7 +281,7 @@
   &.mud-timeline-position-bottom {
     &::before {
       top: auto;
-      bottom: 47px;
+      bottom: 23px;
     }
 
     .mud-timeline-item {
@@ -293,7 +293,7 @@
     &-top, &-bottom {
 
       .mud-timeline-item-content {
-        max-height: calc(100% - 96px);
+        max-height: calc(100% - 48px);
       }
 
       .mud-timeline-item-opposite {
