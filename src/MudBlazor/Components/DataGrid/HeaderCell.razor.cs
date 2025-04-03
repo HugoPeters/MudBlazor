@@ -344,12 +344,19 @@ namespace MudBlazor
             SortDirection = SortDirection switch
             {
                 SortDirection.Ascending => SortDirection.Descending,
+                SortDirection.Descending => SortDirection.None,
                 _ => SortDirection.Ascending
             };
 
+            if (SortDirection == SortDirection.None)
+            {
+                await RemoveSortAsync();
+                return;
+            }
+
             DataGrid.DropContainerHasChanged();
 
-            if (args.CtrlKey && DataGrid.SortMode == SortMode.Multiple)
+            if ((args.MetaKey || args.CtrlKey) && DataGrid.SortMode == SortMode.Multiple)
                 await InvokeAsync(() => DataGrid.ExtendSortAsync(Column.PropertyName, SortDirection, Column.GetLocalSortFunc(), Column.Comparer));
             else
                 await InvokeAsync(() => DataGrid.SetSortAsync(Column.PropertyName, SortDirection, Column.GetLocalSortFunc(), Column.Comparer));

@@ -15,6 +15,7 @@ using FluentAssertions;
 using FluentAssertions.Execution;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using MudBlazor.Extensions;
 using MudBlazor.Interfaces;
 using MudBlazor.UnitTests.TestComponents.DataGrid;
 using MudBlazor.Utilities.Clone;
@@ -584,28 +585,28 @@ namespace MudBlazor.UnitTests.Components
             var comp = Context.RenderComponent<DataGridSingleSelectionTest>();
             var dataGrid = comp.FindComponent<MudDataGrid<DataGridSingleSelectionTest.Item>>();
 
-            dataGrid.Instance.SelectedItems.Count.Should().Be(0);
+            dataGrid.Instance.GetState(x => x.SelectedItems).Count.Should().Be(0);
 
             // select first item programmatically
             var firstItem = dataGrid.Instance.Items.ElementAt(0);
             await comp.InvokeAsync(async () => await dataGrid.Instance.SetSelectedItemAsync(true, firstItem));
-            dataGrid.Instance.SelectedItems.Count.Should().Be(1);
-            dataGrid.Instance.SelectedItem.Should().Be(firstItem);
+            dataGrid.Instance.GetState(x => x.SelectedItems).Count.Should().Be(1);
+            dataGrid.Instance.GetState(x => x.SelectedItem).Should().Be(firstItem);
 
             // select second item programmatically (still should be only one item selected)
             var secondItem = dataGrid.Instance.Items.ElementAt(1);
             await comp.InvokeAsync(async () => await dataGrid.Instance.SetSelectedItemAsync(true, secondItem));
-            dataGrid.Instance.SelectedItems.Count.Should().Be(1);
-            dataGrid.Instance.SelectedItem.Should().Be(secondItem);
+            dataGrid.Instance.GetState(x => x.SelectedItems).Count.Should().Be(1);
+            dataGrid.Instance.GetState(x => x.SelectedItem).Should().Be(secondItem);
 
             // deselect an item programmatically
             await comp.InvokeAsync(async () => await dataGrid.Instance.SetSelectedItemAsync(false, secondItem));
-            dataGrid.Instance.SelectedItems.Count.Should().Be(0);
-            dataGrid.Instance.SelectedItem.Should().BeNull();
+            dataGrid.Instance.GetState(x => x.SelectedItems).Count.Should().Be(0);
+            dataGrid.Instance.GetState(x => x.SelectedItem).Should().BeNull();
 
             // nothing should happen as the "select all" shouldn't do anything in single selection mode
             dataGrid.FindAll("input")[0].Change(true);
-            dataGrid.Instance.SelectedItems.Count.Should().Be(0);
+            dataGrid.Instance.GetState(x => x.SelectedItems).Count.Should().Be(0);
         }
 
         [Test]
@@ -730,15 +731,16 @@ namespace MudBlazor.UnitTests.Components
             //test that changing header sets all items selected
             dataGrid.Instance.SelectedItems.Count.Should().Be(0);
             dataGrid.FindAll("input.mud-checkbox-input")[0].Change(true);
-            dataGrid.Instance.SelectedItems.Count.Should().Be(dataGrid.Instance.Items.Count());
+            comp.Render();
+            dataGrid.Instance.GetState(x => x.SelectedItems).Count.Should().Be(dataGrid.Instance.Items.Count());
             //test that changing footer unselects all items
             dataGrid.FindAll("input.mud-checkbox-input")[^1].Change(false);
-            dataGrid.Instance.SelectedItems.Count.Should().Be(0);
+            dataGrid.Instance.GetState(x => x.SelectedItems).Count.Should().Be(0);
             //test that changing value in each row selects an item in grid
             for (var i = 1; i < dataGrid.Instance.Items.Count(); i++)
             {
                 dataGrid.FindAll("input.mud-checkbox-input")[i].Change(true);
-                dataGrid.Instance.SelectedItems.Count.Should().Be(i);
+                dataGrid.Instance.GetState(x => x.SelectedItems).Count.Should().Be(i);
             }
         }
 
@@ -2509,7 +2511,7 @@ namespace MudBlazor.UnitTests.Components
             // check the number of filters displayed in the filters panel is 1
             comp.FindAll(".filters-panel .mud-grid-item.d-flex").Count.Should().Be(1);
 
-            await comp.Find(".filter-operator").PointerDownAsync(new PointerEventArgs());
+            await comp.Find(".filter-operator").MouseDownAsync(new MouseEventArgs());
 
             //set operator to CONTAINS
             comp.FindAll(".mud-list .mud-list-item")[0].Click();
@@ -2522,7 +2524,7 @@ namespace MudBlazor.UnitTests.Components
             //set operator to NOT CONTAINS
             FilterButton().Click();
 
-            await comp.Find(".filter-operator").PointerDownAsync(new PointerEventArgs());
+            await comp.Find(".filter-operator").MouseDownAsync(new MouseEventArgs());
 
             comp.FindAll(".mud-list .mud-list-item")[1].Click();
             comp.Find(".mud-overlay").Click();
@@ -2534,7 +2536,7 @@ namespace MudBlazor.UnitTests.Components
             //set operator to EQUALS
             FilterButton().Click();
 
-            await comp.Find(".filter-operator").PointerDownAsync(new PointerEventArgs());
+            await comp.Find(".filter-operator").MouseDownAsync(new MouseEventArgs());
 
             comp.FindAll(".mud-list .mud-list-item")[2].Click();
             comp.Find(".mud-overlay").Click();
@@ -2546,7 +2548,7 @@ namespace MudBlazor.UnitTests.Components
             //set operator to NOT EQUALS
             FilterButton().Click();
 
-            await comp.Find(".filter-operator").PointerDownAsync(new PointerEventArgs());
+            await comp.Find(".filter-operator").MouseDownAsync(new MouseEventArgs());
 
             comp.FindAll(".mud-list .mud-list-item")[3].Click();
             comp.Find(".mud-overlay").Click();
@@ -2558,7 +2560,7 @@ namespace MudBlazor.UnitTests.Components
             //set operator to STARTS WITH
             FilterButton().Click();
 
-            await comp.Find(".filter-operator").PointerDownAsync(new PointerEventArgs());
+            await comp.Find(".filter-operator").MouseDownAsync(new MouseEventArgs());
 
             comp.FindAll(".mud-list .mud-list-item")[4].Click();
             comp.Find(".mud-overlay").Click();
@@ -2570,7 +2572,7 @@ namespace MudBlazor.UnitTests.Components
             //set operator to ENDS WITH
             FilterButton().Click();
 
-            await comp.Find(".filter-operator").PointerDownAsync(new PointerEventArgs());
+            await comp.Find(".filter-operator").MouseDownAsync(new MouseEventArgs());
 
             comp.FindAll(".mud-list .mud-list-item")[5].Click();
             comp.Find(".mud-overlay").Click();
@@ -2582,7 +2584,7 @@ namespace MudBlazor.UnitTests.Components
             //set operator to IS EMPTY
             FilterButton().Click();
 
-            await comp.Find(".filter-operator").PointerDownAsync(new PointerEventArgs());
+            await comp.Find(".filter-operator").MouseDownAsync(new MouseEventArgs());
 
             comp.FindAll(".mud-list .mud-list-item")[6].Click();
             comp.Find(".mud-overlay").Click();
@@ -2594,7 +2596,7 @@ namespace MudBlazor.UnitTests.Components
             //set operator to IS NOT EMPTY
             FilterButton().Click();
 
-            await comp.Find(".filter-operator").PointerDownAsync(new PointerEventArgs());
+            await comp.Find(".filter-operator").MouseDownAsync(new MouseEventArgs());
 
             comp.FindAll(".mud-list .mud-list-item")[7].Click();
             comp.Find(".mud-overlay").Click();
@@ -2746,7 +2748,7 @@ namespace MudBlazor.UnitTests.Components
             selects.Count.Should().Be(2);
 
             // open operator menu
-            selects[1].PointerDown();
+            selects[1].MouseDown();
 
             //check available operators
             var items = comp.FindAll("div.mud-list-item");
@@ -3125,7 +3127,6 @@ namespace MudBlazor.UnitTests.Components
             var comp = Context.RenderComponent<DataGridColumnChooserTest>();
             var dataGrid = comp.FindComponent<MudDataGrid<DataGridColumnChooserTest.Model>>();
             var popoverProvider = comp.FindComponent<MudPopoverProvider>();
-            var popover = dataGrid.FindComponent<MudPopover>();
 
             dataGrid.FindAll(".mud-table-head th").Count.Should().Be(6);
             await comp.InvokeAsync(() =>
@@ -3146,7 +3147,7 @@ namespace MudBlazor.UnitTests.Components
             {
                 var columnsButton = dataGrid.Find("button.mud-button-root.mud-icon-button.mud-ripple.mud-ripple-icon.mud-icon-button-size-small");
                 columnsButton.Click();
-
+                var popover = dataGrid.FindComponent<MudPopover>();
                 popover.Instance.Open.Should().BeTrue("Should be open once clicked");
                 var listItems = popoverProvider.FindComponents<MudMenuItem>();
                 listItems.Count.Should().Be(1);
@@ -3189,13 +3190,12 @@ namespace MudBlazor.UnitTests.Components
             var dataGrid = comp.FindComponent<MudDataGrid<DataGridColumnHiddenTest.Model>>();
 
             var popoverProvider = comp.FindComponent<MudPopoverProvider>();
-            var popover = dataGrid.FindComponent<MudPopover>();
-            popover.Instance.Open.Should().BeFalse("Should start as closed");
 
+            comp.Markup.Should().NotContain("mud-popover-open");
             var columnsButton = dataGrid.Find("button.mud-button-root.mud-icon-button.mud-ripple.mud-ripple-icon.mud-icon-button-size-small");
             columnsButton.Click();
 
-            popover.Instance.Open.Should().BeTrue("Should be open once clicked");
+            comp.Markup.Should().Contain("mud-popover-open");
             var listItems = popoverProvider.FindComponents<MudMenuItem>();
             listItems.Count.Should().Be(1);
             var clickablePopover = listItems[0].Find(".mud-menu-item");
@@ -3245,7 +3245,7 @@ namespace MudBlazor.UnitTests.Components
                 foreach (var column in dataGrid.Instance.RenderedColumns)
                 {
                     await column.HiddenState.SetValueAsync(true);
-                };
+                }
             });
 
             // cannot render the component again there can be only one mudpopoverprovider
@@ -3259,7 +3259,7 @@ namespace MudBlazor.UnitTests.Components
                 foreach (var column in dataGrid.Instance.RenderedColumns)
                 {
                     await column.HiddenState.SetValueAsync(false);
-                };
+                }
             });
 
             // 6 columns, 0 hidden (1 permanently hidden)
@@ -3360,6 +3360,17 @@ namespace MudBlazor.UnitTests.Components
         }
 
         [Test]
+        public void DataGridColumnShowFilterIconsTest()
+        {
+            var comp = Context.RenderComponent<DataGridColumnShowFilterIconsTest>();
+            var dataGrid = comp.FindComponent<MudDataGrid<DataGridColumnShowFilterIconsTest.Model>>();
+
+            // Should have 5 columns, but only two with filter icons
+            dataGrid.FindComponents<Column<DataGridColumnShowFilterIconsTest.Model>>().Should().HaveCount(5);
+            dataGrid.FindAll(".column-filter-menu").Should().HaveCount(2);
+        }
+
+        [Test]
         public async Task DataGridColumnPopupFilteringEmptyTest()
         {
             var comp = Context.RenderComponent<DataGridColumnPopupFilteringTest>();
@@ -3394,7 +3405,7 @@ namespace MudBlazor.UnitTests.Components
             comp.Find(".filter-button").Click();
             comp.FindAll(".filters-panel").Count.Should().Be(1);
 
-            comp.FindAll("div.mud-input-control")[0].PointerDown();
+            comp.FindAll("div.mud-input-control")[0].MouseDown();
             comp.FindAll("div.mud-list-item").Count.Should().Be(3);
         }
 
@@ -4294,14 +4305,14 @@ namespace MudBlazor.UnitTests.Components
             var dataGrid = comp.FindComponent<MudDataGrid<DataGridMultiSelectionTest.Item>>();
 
             // click on the first row
-            dataGrid.Instance.SelectedItems.Count.Should().Be(0);
+            dataGrid.Instance.GetState(x => x.SelectedItems).Count.Should().Be(0);
             dataGrid.FindAll("tbody.mud-table-body td")[1].Click();
-            dataGrid.Instance.SelectedItems.Count.Should().Be(1);
+            dataGrid.Instance.GetState(x => x.SelectedItems).Count.Should().Be(1);
             dataGrid.FindAll(".mud-checkbox-true").Count.Should().Be(1); //ensure selection is rendered
 
             // click on the second row
             dataGrid.FindAll("tbody.mud-table-body td")[2].Click();
-            dataGrid.Instance.SelectedItems.Count.Should().Be(2);
+            dataGrid.Instance.GetState(x => x.SelectedItems).Count.Should().Be(2);
             dataGrid.FindAll(".mud-checkbox-true").Count.Should().Be(2);
 
             var parameters = new List<ComponentParameter>();
@@ -4310,13 +4321,13 @@ namespace MudBlazor.UnitTests.Components
 
             // deselect all programmatically
             await comp.InvokeAsync(async () => await dataGrid.Instance.SetSelectAllAsync(false));
-            dataGrid.Instance.SelectedItems.Count.Should().Be(0);
+            dataGrid.Instance.GetState(x => x.SelectedItems).Count.Should().Be(0);
             dataGrid.FindAll(".mud-checkbox-true").Count.Should().Be(0);
 
             // click on the first row
-            dataGrid.Instance.SelectedItems.Count.Should().Be(0);
+            dataGrid.Instance.GetState(x => x.SelectedItems).Count.Should().Be(0);
             dataGrid.FindAll("tbody.mud-table-body td")[1].Click();
-            dataGrid.Instance.SelectedItems.Count.Should().Be(0);
+            dataGrid.Instance.GetState(x => x.SelectedItems).Count.Should().Be(0);
             dataGrid.FindAll(".mud-checkbox-true").Count.Should().Be(0);
         }
 
@@ -4327,20 +4338,20 @@ namespace MudBlazor.UnitTests.Components
             var dataGrid = comp.FindComponent<MudDataGrid<DataGridSingleSelectionTest.Item>>();
 
             // click on the first row
-            dataGrid.Instance.SelectedItems.Count.Should().Be(0);
+            dataGrid.Instance.GetState(x => x.SelectedItems).Count.Should().Be(0);
             dataGrid.FindAll("tbody.mud-table-body td")[1].Click();
-            dataGrid.Instance.SelectedItems.Count.Should().Be(1);
+            dataGrid.Instance.GetState(x => x.SelectedItems).Count.Should().Be(1);
             dataGrid.FindAll(".mud-checkbox-true").Count.Should().Be(1); //ensure selection is rendered
 
             // click on the second row
             dataGrid.FindAll("tbody.mud-table-body td")[2].Click();
-            dataGrid.Instance.SelectedItems.Count.Should().Be(1);
+            dataGrid.Instance.GetState(x => x.SelectedItems).Count.Should().Be(1);
             dataGrid.FindAll(".mud-checkbox-true").Count.Should().Be(1);
 
 
             // click on the second row
             dataGrid.FindAll("tbody.mud-table-body td")[2].Click();
-            dataGrid.Instance.SelectedItems.Count.Should().Be(0);
+            dataGrid.Instance.GetState(x => x.SelectedItems).Count.Should().Be(0);
             dataGrid.FindAll(".mud-checkbox-true").Count.Should().Be(0);
 
             var parameters = new List<ComponentParameter>
@@ -4352,12 +4363,12 @@ namespace MudBlazor.UnitTests.Components
 
             // deselect all programmatically
             await comp.InvokeAsync(async () => await dataGrid.Instance.SetSelectAllAsync(false));
-            dataGrid.Instance.SelectedItems.Count.Should().Be(0);
+            dataGrid.Instance.GetState(x => x.SelectedItems).Count.Should().Be(0);
 
             // click on the first row
-            dataGrid.Instance.SelectedItems.Count.Should().Be(0);
+            dataGrid.Instance.GetState(x => x.SelectedItems).Count.Should().Be(0);
             dataGrid.FindAll("tbody.mud-table-body td")[1].Click();
-            dataGrid.Instance.SelectedItems.Count.Should().Be(0);
+            dataGrid.Instance.GetState(x => x.SelectedItems).Count.Should().Be(0);
             dataGrid.FindAll(".mud-checkbox-true").Count.Should().Be(0);
         }
 
@@ -4944,7 +4955,7 @@ namespace MudBlazor.UnitTests.Components
             FilterButton().Click();
 
             IElement SelectElement() => comp.Find("div.mud-select.filter-input");
-            SelectElement().PointerDown();
+            SelectElement().MouseDown();
 
             var items = comp.FindAll("div.mud-list-item").ToArray();
 
@@ -5003,6 +5014,167 @@ namespace MudBlazor.UnitTests.Components
             comp.FindAll(".mud-table-pagination-actions .mud-button-root")[2].Click();
             comp.WaitForAssertion(() => dataGrid.CurrentPage.Should().Be(2));
             comp.WaitForAssertion(() => comp.Find(".mud-table-body .mud-table-row .mud-table-cell").TextContent.Should().Be("3"));
+        }
+
+        [Test]
+        [TestCase(true, true)]
+        [TestCase(true, false)]
+        [TestCase(false, true)]
+        [TestCase(false, false)]
+        public void TestRtlGroupIconMethod(bool isRightToLeft, bool isExpanded)
+        {
+            var test = new MudDataGrid<int>();
+            if (isExpanded)
+            {
+                test.GetGroupIcon(isExpanded, isRightToLeft).Should().Be(Icons.Material.Filled.ExpandMore);
+            }
+            else
+            {
+                test.GetGroupIcon(isExpanded, isRightToLeft).Should().Be(isRightToLeft ? Icons.Material.Filled.ChevronLeft : Icons.Material.Filled.ChevronRight);
+            }
+        }
+
+        /// <summary>
+        /// Verifies data grid does not reuse row child components for different items (the @key for the row is set to the user supplied item).
+        /// </summary>
+        [Test]
+        public async Task DataGridUniqueRowKey()
+        {
+            //Test the normal case
+            var comp = Context.RenderComponent<DataGridUniqueRowKeyTest>();
+            var dataGrid = comp.FindComponent<MudDataGrid<string>>();
+
+            var sortByColumnName = dataGrid.Instance.RenderedColumns.FirstOrDefault().PropertyName;
+
+            await comp.InvokeAsync(() => dataGrid.Instance.SetSortAsync(sortByColumnName, SortDirection.Ascending, x => x));
+            var before = dataGrid.FindComponent<MudInput<string>>();
+            await comp.InvokeAsync(() => dataGrid.Instance.SetSortAsync(sortByColumnName, SortDirection.Descending, x => x));
+            var after = dataGrid.FindComponent<MudInput<string>>();
+
+            before.Should().NotBeSameAs(after, because: "If the @key is correctly set to the row item, child components will be recreated on row reordering.");
+
+
+            //Test the expanded group case
+            comp.SetParametersAndRender(parameters => parameters.Add(p => p.Group, true));
+            await comp.InvokeAsync(() => dataGrid.Instance.ExpandAllGroups());
+
+            await comp.InvokeAsync(() => dataGrid.Instance.SetSortAsync(sortByColumnName, SortDirection.Ascending, x => x));
+            before = dataGrid.FindComponent<MudInput<string>>();
+            await comp.InvokeAsync(() => dataGrid.Instance.SetSortAsync(sortByColumnName, SortDirection.Descending, x => x));
+            after = dataGrid.FindComponent<MudInput<string>>();
+
+            before.Should().NotBeSameAs(after, because: "If the @key is correctly set to the row item, child components will be recreated on row reordering.");
+        }
+
+        [Test]
+        public async Task DataGrid_TwoWayBind_SelectedItem_SelectedItems()
+        {
+            int selectedItem = 3;
+            var items = new List<int> { 1, 2, 3, 4, 5 };
+            HashSet<int> selectedItems = new HashSet<int> { selectedItem };
+            var comp = Context.RenderComponent<MudDataGrid<int>>(parameters =>
+            {
+                parameters.Add(x => x.Items, items);
+                parameters.Bind(x => x.SelectedItem, selectedItem, x => selectedItem = x);
+                parameters.Bind(x => x.SelectedItems, selectedItems, x => selectedItems = x);
+                parameters.Add(x => x.MultiSelection, false);
+            });
+
+            comp.Instance.Items.Count().Should().Be(items.Count);
+            comp.Instance.GetState(x => x.SelectedItem).Should().Be(selectedItem);
+            comp.Instance.GetState(x => x.SelectedItems).Should().Contain(selectedItem);
+
+            // in single selection toggle selection using row click method
+            await comp.Instance.SetSelectedItemAsync(5);
+
+            // two way binding should have updated
+            selectedItems.Should().Contain(5);
+            selectedItems.Count().Should().Be(1);
+            selectedItem.Should().Be(5);
+
+            // in multi selection toggle selection using row click method
+            comp.SetParam(x => x.MultiSelection, true);
+            comp.Render();
+            await comp.Instance.SetSelectedItemAsync(4);
+
+            // two way binding should have updated
+            selectedItems.Should().Contain(4);
+            selectedItems.Should().Contain(5);
+            selectedItems.Count().Should().Be(2);
+            selectedItem.Should().Be(4);
+        }
+
+        [Test]
+        public async Task DataGridSelectedItemEventsTest()
+        {
+            var comp = Context.RenderComponent<DataGridEventCallbacksTest>();
+            var dataGrid = comp.FindComponent<MudDataGrid<DataGridEventCallbacksTest.Item>>();
+
+            // Test single selection mode
+            dataGrid.SetParam(x => x.MultiSelection, false);
+            comp.Render();
+
+            // Select an item
+            var firstItem = dataGrid.Instance.Items.First();
+            await comp.InvokeAsync(async () => await dataGrid.Instance.SetSelectedItemAsync(true, firstItem));
+
+            // Verify events
+            comp.Instance.SelectedItemChanged.Should().BeTrue();
+            comp.Instance.SelectedItemsChanged.Should().BeTrue();
+
+            // Reset event flags
+            comp.Instance.SelectedItemChanged = false;
+            comp.Instance.SelectedItemsChanged = false;
+
+            // Deselect the item
+            await comp.InvokeAsync(async () => await dataGrid.Instance.SetSelectedItemAsync(false, firstItem));
+
+            // Verify events for deselection
+            comp.Instance.SelectedItemChanged.Should().BeTrue();
+            comp.Instance.SelectedItemsChanged.Should().BeTrue();
+
+            // Reset event flags
+            comp.Instance.SelectedItemChanged = false;
+            comp.Instance.SelectedItemsChanged = false;
+
+            // Test multi-selection mode
+            dataGrid.SetParam(x => x.MultiSelection, true);
+            comp.Render();
+
+            // Select all items
+            await comp.InvokeAsync(async () => await dataGrid.Instance.SetSelectAllAsync(true));
+
+            // Verify events
+            comp.Instance.SelectedItemChanged.Should().BeFalse();
+            comp.Instance.SelectedItemsChanged.Should().BeTrue();
+
+            // Reset event flags
+            comp.Instance.SelectedItemChanged = false;
+            comp.Instance.SelectedItemsChanged = false;
+
+            // Deselect all items
+            await comp.InvokeAsync(async () => await dataGrid.Instance.SetSelectAllAsync(false));
+
+            // Verify events for deselection
+            comp.Instance.SelectedItemChanged.Should().BeFalse();
+            comp.Instance.SelectedItemsChanged.Should().BeTrue();
+
+            // Reset event flags
+            comp.Instance.SelectedItemChanged = false;
+            comp.Instance.SelectedItemsChanged = false;
+
+            // Test row click select
+            // find first mud-table-row and second mud-table-cell
+            var firstRow = dataGrid.FindAll(".mud-table-row")[1];
+            firstRow.Click();
+
+            // Verify events for row click
+            comp.WaitForAssertion(() => comp.Instance.SelectedItemChanged.Should().BeTrue());
+            comp.Instance.SelectedItemsChanged.Should().BeTrue();
+
+            // Reset event flags
+            comp.Instance.SelectedItemChanged = false;
+            comp.Instance.SelectedItemsChanged = false;
         }
     }
 }

@@ -24,6 +24,7 @@ namespace MudBlazor
         private int _elementKey = 0;
         private int _returnedItemsCount;
         private bool _open;
+        private bool _opening;
         private MudInput<string> _elementReference = null!;
         private CancellationTokenSource? _cancellationTokenSrc;
         private Task? _currentSearchTask;
@@ -366,6 +367,16 @@ namespace MudBlazor
         public RenderFragment? ProgressIndicatorInPopoverTemplate { get; set; }
 
         /// <summary>
+        /// Prevents interaction with background elements while this list is open.
+        /// </summary>
+        /// <remarks>
+        /// Defaults to <c>true</c>.
+        /// </remarks>
+        [Parameter]
+        [Category(CategoryTypes.FormComponent.ListBehavior)]
+        public bool Modal { get; set; } = true;
+
+        /// <summary>
         /// Determines the width of this Popover dropdown in relation to the parent container.
         /// </summary>
         /// <remarks>
@@ -525,7 +536,13 @@ namespace MudBlazor
             _isProcessingValue = true;
             try
             {
+                // needs to close before SetValueAsync so that whatever the user puts in ValueChanged can run without the popover being in front of it
+                Open = false;
+
                 await SetValueAsync(value);
+
+                // needs to be open to run the rest of the code
+                Open = true;
 
                 if (_items != null)
                     _selectedListItemIndex = Array.IndexOf(_items, value);
@@ -545,10 +562,11 @@ namespace MudBlazor
                 }
 
                 await FocusAsync();
-
+                // We want focus with a closed popover
                 Open = false;
-
+                // And update
                 StateHasChanged();
+
             }
             finally
             {
@@ -658,11 +676,8 @@ namespace MudBlazor
         }
 
         /// <summary>
-        /// Opens the drop-down of items.
+        /// Opens the drop-down of items, or refreshes the list if it is already open.
         /// </summary>
-        /// <remarks>
-        /// Will have no effect if the autocomplete is disabled or read-only.
-        /// </remarks>
         public async Task OpenMenuAsync()
         {
             if (MinCharacters > 0 && (string.IsNullOrWhiteSpace(Text) || Text.Length < MinCharacters))
@@ -671,6 +686,8 @@ namespace MudBlazor
                 StateHasChanged();
                 return;
             }
+
+            _opening = true;
 
             var searchedItems = Array.Empty<T>();
             CancelToken();
@@ -737,6 +754,7 @@ namespace MudBlazor
                 Open = true;
             }
 
+            _opening = false;
             StateHasChanged();
         }
 
@@ -893,8 +911,18 @@ namespace MudBlazor
 
             _selectedListItemIndex = index;
 
+            return ScrollToListItemAsync(index);
+        }
+
+        /// <summary>
+        /// Scrolls the list of items to the item at the specified index.
+        /// </summary>
+        /// <param name="index">The index of the item to scroll to.</param>
+        public ValueTask ScrollToListItemAsync(int index)
+        {
             var id = GetListItemId(index);
 
+            //id of the scrolled element
             return ScrollManager.ScrollToListItemAsync(id);
         }
 
@@ -947,27 +975,36 @@ namespace MudBlazor
         {
             _isFocused = true;
 
-            if (Open || GetDisabledState() || GetReadOnlyState())
-            {
-                return;
-            }
-
-            if (SelectOnActivation)
+            if (SelectOnActivation && !GetDisabledState() && !GetReadOnlyState())
             {
                 await SelectAsync();
             }
 
-            if (openMenu)
+            if (openMenu && !Open && !_opening)
             {
                 await OpenMenuAsync();
             }
+        }
+
+        internal async Task HandleClearButtonAsync(MouseEventArgs e)
+        {
+            // clear button clicked, let's make sure text is cleared and the menu has focus
+            Open = true;
+            _isFocused = true;
+            await SetValueAsync(default, false);
+            await SetTextAsync(default, false);
+            _selectedListItemIndex = default;
+            await CloseMenuAsync();
+            StateHasChanged();
+            await OnClearButtonClick.InvokeAsync(e);
+            await BeginValidateAsync();
         }
 
         internal async Task AdornmentClickHandlerAsync()
         {
             if (OnAdornmentClick.HasDelegate)
             {
-                await FocusAsync();
+
                 await OnAdornmentClick.InvokeAsync();
             }
             else

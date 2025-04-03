@@ -4,6 +4,31 @@
 
 window.mudpopoverHelper = {
 
+    debounce: function (func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    },
+
+    rafThrottle: function (func) {
+        let ticking = false;
+        return function (...args) {
+            if (!ticking) {
+                window.requestAnimationFrame(() => {
+                    func.apply(this, args);
+                    ticking = false;
+                });
+                ticking = true;
+            }
+        };
+    },
+
     calculatePopoverPosition: function (list, boundingRect, selfRect) {
         let top = 0;
         let left = 0;
@@ -162,7 +187,6 @@ window.mudpopoverHelper = {
 
             if (classSelector) {
                 if (classList.contains(classSelector) == false) {
-                    this.updatePopoverOverlay(popoverContentNode);
                     return;
                 }
             }
@@ -351,10 +375,9 @@ window.mudpopoverHelper = {
             this.updatePopoverZIndex(popoverContentNode, popoverNode.parentNode);
 
             if (window.getComputedStyle(popoverNode).getPropertyValue('z-index') != 'auto') {
-                popoverContentNode.style['z-index'] = window.getComputedStyle(popoverNode).getPropertyValue('z-index');
+                popoverContentNode.style['z-index'] = Math.max(window.getComputedStyle(popoverNode).getPropertyValue('z-index'), popoverContentNode.style['z-index']);
                 popoverContentNode.skipZIndex = true;
             }
-            this.updatePopoverOverlay(popoverContentNode);
         }
         else {
             //console.log(`popoverNode: ${popoverNode} ${popoverNode ? popoverNode.parentNode : ""}`);
@@ -404,16 +427,21 @@ window.mudpopoverHelper = {
     },
 
     updatePopoverOverlay: function (popoverContentNode) {
+        // tooltips don't have an overlay
+        if (popoverContentNode.classList.contains("mud-tooltip")) {
+            return;
+        }
         // set any associated overlay to equal z-index
         const provider = popoverContentNode.closest('.mud-popover-provider');
         if (provider && popoverContentNode.classList.contains("mud-popover")) {
             const overlay = provider.querySelector('.mud-overlay');
             // skip any overlay marked with mud-skip-overlay
             if (overlay && !overlay.classList.contains('mud-skip-overlay-positioning')) {
-                // Only assign z-index if it doesn't already exist
-                if (!overlay.style['z-index']) {
+                // Only assign z-index if it doesn't already exist or has changed
+                if (popoverContentNode && overlay.style['z-index'] !== popoverContentNode.style['z-index']) {
                     overlay.style['z-index'] = popoverContentNode.style['z-index'];
                 }
+
             }
         }
     },
@@ -498,7 +526,7 @@ class MudPopover {
                 }
                 else if (mutation.attributeName == 'data-ticks') {
                     // data-ticks are important for Direction and Location, it doesn't reposition
-                    // if they aren't there                    
+                    // if they aren't there     
                     const tickAttribute = target.getAttribute('data-ticks');
 
                     const tickValues = [];
@@ -521,6 +549,26 @@ class MudPopover {
                                 max = tickValue;
                             }
                         }
+                    }
+
+                    // Iterate over the items in this.map to reset any open overlays
+                    let highestTickItem = null;
+                    let highestTickValue = -1;
+                    // Iterate over the items in this.map to find the highest data-ticks value
+                    for (const mapItem of Object.values(this.map)) {
+                        const popoverContentNode = mapItem.popoverContentNode;
+                        if (popoverContentNode) {
+                            const tickValue = Number(popoverContentNode.getAttribute('data-ticks')); // Convert to Number
+
+                            if (tickValue > highestTickValue) {
+                                highestTickValue = tickValue;
+                                highestTickItem = popoverContentNode;
+                            }
+                        }
+                    }
+
+                    if (highestTickItem) {
+                        window.mudpopoverHelper.updatePopoverOverlay(highestTickItem);
                     }
 
                     if (tickValues.length == 0) {
@@ -594,9 +642,7 @@ class MudPopover {
             const resizeObserver = new ResizeObserver(entries => {
                 for (let entry of entries) {
                     const target = entry.target;
-
-                    for (var i = 0; i < target.childNodes.length; i++) {
-                        const childNode = target.childNodes[i];
+                    for (const childNode of target.childNodes) {
                         if (childNode.id && childNode.id.startsWith('popover-')) {
                             window.mudpopoverHelper.placePopover(childNode);
                         }
@@ -608,16 +654,16 @@ class MudPopover {
 
             const contentNodeObserver = new ResizeObserver(entries => {
                 for (let entry of entries) {
-                    var target = entry.target;
-                    window.mudpopoverHelper.placePopoverByNode(target);
-
-
+                    const target = entry.target;
+                    if (target)
+                        window.mudpopoverHelper.placePopoverByNode(target);
                 }
             });
 
             contentNodeObserver.observe(popoverContentNode);
 
             this.map[id] = {
+                popoverContentNode: popoverContentNode,
                 mutationObserver: observer,
                 resizeObserver: resizeObserver,
                 contentNodeObserver: contentNodeObserver
@@ -658,11 +704,14 @@ class MudPopover {
 
 window.mudPopover = new MudPopover();
 
-window.addEventListener('scroll', () => {
+const debouncedResize = window.mudpopoverHelper.debounce(() => {
+    window.mudpopoverHelper.placePopoverByClassSelector();
+}, 100);
+
+const throttledScroll = window.mudpopoverHelper.rafThrottle(() => {
     window.mudpopoverHelper.placePopoverByClassSelector('mud-popover-fixed');
     window.mudpopoverHelper.placePopoverByClassSelector('mud-popover-overflow-flip-always');
 });
 
-window.addEventListener('resize', () => {
-    window.mudpopoverHelper.placePopoverByClassSelector();
-});
+window.addEventListener('resize', debouncedResize, { passive: true });
+window.addEventListener('scroll', throttledScroll, { passive: true });
