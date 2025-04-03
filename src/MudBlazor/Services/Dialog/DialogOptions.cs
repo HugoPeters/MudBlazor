@@ -23,6 +23,8 @@ namespace MudBlazor
         /// </summary>
         internal static readonly DialogOptions Default = new();
 
+        public bool Drawer { get; set; }
+
         /// <summary>
         /// The location of the dialog.
         /// </summary>

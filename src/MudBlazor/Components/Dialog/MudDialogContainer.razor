@@ -3,32 +3,56 @@
 @inherits MudComponentBase
 @inject InternalMudLocalizer Localizer
 
+<style>
+    .tz-sideprops-drawer {
+        margin: 30px;
+        background-color: var(--mud-drawer-bg);
+        height: calc(100vh - 60px);
+        border-radius: 8px;
+    }
+</style>
+
 @{
 #nullable enable
 }
 
-<div @attributes="UserAttributes" id="@_elementId" class="mud-dialog-container @GetPosition()">
-    <MudOverlay Visible="true" OnClick="HandleBackgroundClickAsync" Class="@BackgroundClassname" DarkBackground="true" />
-    <div id="_@Id.ToString("N")" role="dialog" class="@Classname" style="@Style">
-        @if (!GetHideHeader())
-        {
-            <div class="@TitleClassname">
-                @if (TitleContent is null)
-                {
-                    <MudText Typo="Typo.h6">@_titleState.Value</MudText>
-                }
-                else
-                {
-                    @TitleContent
-                }
-                @if (GetCloseButton())
-                {
-                    <MudIconButton aria-label="@Localizer[LanguageResource.MudDialog_Close]" Icon="@CloseIcon" @onclick="((IMudDialogInstance)this).Cancel" Class="mud-button-close" />
-                }
-            </div>
-         }
-        <CascadingValue Value="(IMudDialogInstanceInternal)this" IsFixed="true">
-            @Content
-        </CascadingValue>
+@if (!Options.Drawer)
+{
+    <div @attributes="UserAttributes" id="@_elementId" class="mud-dialog-container @GetPosition()">
+        <MudOverlay Visible="true" OnClick="HandleBackgroundClickAsync" Class="@BackgroundClassname" DarkBackground="true" />
+        <div id="_@Id.ToString("N")" role="dialog" class="@Classname" style="@Style">
+            @if (!GetHideHeader())
+            {
+                <div class="@TitleClassname">
+                    @if (TitleContent is null)
+                    {
+                        <MudText Typo="Typo.h6">@_titleState.Value</MudText>
+                    }
+                    else
+                    {
+                        @TitleContent
+                    }
+                    @if (GetCloseButton())
+                    {
+                        <MudIconButton aria-label="@Localizer[LanguageResource.MudDialog_Close]" Icon="@CloseIcon" @onclick="((IMudDialogInstance)this).Cancel" Class="mud-button-close" />
+                    }
+                </div>
+             }
+            <CascadingValue Value="(IMudDialogInstanceInternal)this" IsFixed="true">
+                @Content
+            </CascadingValue>
+        </div>
     </div>
-</div>
+}
+else
+{
+    <div @attributes="UserAttributes" id="@_elementId">
+
+        <div id="_@Id.ToString("N")" role="dialog" class="tz-sideprops-drawer rounded-lg mud-elevation-25 pa-6">
+            <CascadingValue Value="(IMudDialogInstanceInternal)this" IsFixed="true">
+                @Content
+            </CascadingValue>
+        </div>
+
+    </div>
+}

@@ -361,7 +361,7 @@ namespace MudBlazor
 
         private bool GetGutters() => Gutters ?? MudList?.Gutters ?? true;
 
-        private bool? GetCheckBoxState() => _selected;
+        public bool? GetCheckBoxState() => _selected;
 
         private async Task OnCheckboxChangedAsync()
         {

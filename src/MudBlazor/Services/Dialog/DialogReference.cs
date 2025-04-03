@@ -63,6 +63,8 @@ namespace MudBlazor
         /// <inheritdoc />
         public RenderFragment? RenderFragment { get; set; }
 
+        public bool Drawer { get; set; }
+
         /// <inheritdoc />
         public Task<DialogResult?> Result => _resultCompletion.Task;
 

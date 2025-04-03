@@ -25,6 +25,8 @@ namespace MudBlazor
         /// </summary>
         RenderFragment? RenderFragment { get; set; }
 
+        public bool Drawer { get; set; }
+
         /// <summary>
         /// The result of closing the dialog.
         /// </summary>

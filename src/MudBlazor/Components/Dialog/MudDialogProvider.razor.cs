@@ -25,6 +25,8 @@ namespace MudBlazor
     {
         private DialogOptions _globalDialogOptions = new();
         private readonly List<IDialogReference> _dialogs = [];
+        private bool _staticDrawerOpen = false;
+        private IDialogReference? _staticDrawerDialog;
 
         [Inject]
         private IDialogService DialogService { get; set; } = null!;
@@ -152,6 +154,13 @@ namespace MudBlazor
 
         private Task AddInstanceAsync(IDialogReference dialog)
         {
+            if (dialog.Drawer)
+            {
+                _staticDrawerDialog = dialog;
+                _staticDrawerOpen = true;
+                return InvokeAsync(StateHasChanged);
+            }
+
             _dialogs.Add(dialog);
             return InvokeAsync(StateHasChanged);
         }
@@ -172,13 +181,39 @@ namespace MudBlazor
         {
             if (!dialog.Dismiss(result)) return;
 
+            if (dialog.Drawer)
+            {
+                _staticDrawerOpen = false;
+                StateHasChanged();
+                return;
+            }
+
             _dialogs.Remove(dialog);
             StateHasChanged();
         }
 
+        private void StaticDrawerOpenChanged(bool open)
+        {
+            _staticDrawerOpen = open;
+
+            if (!open && _staticDrawerDialog != null)
+            {
+                DismissInstance(_staticDrawerDialog, DialogResult.Cancel());
+            }
+        }
+
+
         private IDialogReference? GetDialogReference(Guid id)
         {
-            return _dialogs.ToArray().FirstOrDefault(d => d.Id == id);
+            var ret = _dialogs.ToArray().FirstOrDefault(d => d.Id == id);
+
+            if (ret != null)
+                return ret;
+
+            if (_staticDrawerDialog?.Id == id)
+                return _staticDrawerDialog;
+
+            return null;
         }
 
         private void LocationChanged(object? sender, LocationChangedEventArgs args)

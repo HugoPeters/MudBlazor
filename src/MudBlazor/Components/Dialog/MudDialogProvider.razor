@@ -2,9 +2,40 @@
 
 <CascadingValue Value="this" IsFixed="true">
     <CascadingValue Value="_globalDialogOptions">
-        @foreach (var dialogReference in _dialogs.ToArray().Where(x => !x.Result.IsCompleted))
+
+        @foreach (var dialogReference in _dialogs.ToArray().Where(x => !x.Result.IsCompleted && !x.Drawer))
         {
             @dialogReference.RenderFragment
         }
+
+
+        <MudDrawerContainer>
+            @{
+                @foreach (var dialogReference in _dialogs.ToArray().Where(x => !x.Result.IsCompleted && x.Drawer))
+                {
+
+                }
+
+                <MudDrawer Open=@_staticDrawerOpen
+                            OpenChanged=@StaticDrawerOpenChanged
+                            Class="tz-sideprops-drawer"
+                            Style="background: transparent; position: fixed;"
+                            Anchor=Anchor.End
+                            Elevation="0"
+                            Width="600px"
+                            Variant="@DrawerVariant.Temporary"
+                            OverlayAutoClose="true">
+                    @if (_staticDrawerDialog != null)
+                    {
+                       @_staticDrawerDialog.RenderFragment
+                    }
+                </MudDrawer>
+            }
+        </MudDrawerContainer>
+
+
+        
+
+        
     </CascadingValue>
 </CascadingValue>
