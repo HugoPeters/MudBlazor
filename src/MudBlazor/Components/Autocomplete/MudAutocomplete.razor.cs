@@ -58,7 +58,7 @@ namespace MudBlazor
                 .AddClass("progress-indicator-circular--with-adornment", Adornment == Adornment.End)
                 .Build();
 
-        protected string GetListItemClassname(bool isSelected) =>
+        public string GetListItemClassname(bool isSelected) =>
             new CssBuilder()
                 .AddClass("mud-selected-item mud-primary-text mud-primary-hover", isSelected)
                 .AddClass(ListItemClass)
@@ -345,6 +345,10 @@ namespace MudBlazor
         [Parameter]
         [Category(CategoryTypes.FormComponent.ListBehavior)]
         public RenderFragment? AfterItemsTemplate { get; set; }
+
+        [Parameter]
+        [Category(CategoryTypes.FormComponent.ListBehavior)]
+        public RenderFragment? CustomItemsTemplate { get; set; }
 
         /// <summary>
         /// The custom template used for the progress indicator when <see cref="ShowProgressIndicator"/> is <c>true</c>.
@@ -937,7 +941,7 @@ namespace MudBlazor
             return ScrollManager.ScrollToListItemAsync(GetListItemId(0));
         }
 
-        private string GetListItemId(in int index)
+        public string GetListItemId(in int index)
         {
             return $"{_componentId}_item{index}";
         }

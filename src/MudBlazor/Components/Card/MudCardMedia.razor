@@ -1,4 +1,9 @@
 ﻿@namespace MudBlazor
 @inherits MudComponentBase
 
-<div @attributes="UserAttributes" title="@Title" class="@Classname" style="@StyleString"></div>
+<div @attributes="UserAttributes" title="@Title" class="@Classname" style="@StyleString">
+    @if (ChildContent != null)
+    {
+        @ChildContent
+    }
+</div>

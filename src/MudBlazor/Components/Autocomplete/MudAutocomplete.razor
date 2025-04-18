@@ -70,13 +70,13 @@
                 }
 
                 <MudPopover Open="@Open"
-                            Class="@PopoverClass"
-                            MaxHeight="@MaxHeight"
-                            RelativeWidth="@RelativeWidth"
-                            AnchorOrigin="@AnchorOrigin"
-                            TransformOrigin="@TransformOrigin"
-                            Fixed="@DropdownSettings.Fixed"
-                            OverflowBehavior="@DropdownSettings.OverflowBehavior">
+                Class="@PopoverClass"
+                MaxHeight="@MaxHeight"
+                RelativeWidth="@RelativeWidth"
+                AnchorOrigin="@AnchorOrigin"
+                TransformOrigin="@TransformOrigin"
+                Fixed="@DropdownSettings.Fixed"
+                OverflowBehavior="@DropdownSettings.OverflowBehavior">
                     @if (ProgressIndicatorInPopoverTemplate is not null && IsLoading)
                     {
                         @ProgressIndicatorInPopoverTemplate
@@ -90,33 +90,42 @@
                                     @BeforeItemsTemplate
                                 </div>
                             }
-                            @for (var index = 0; index < _items.Length; index++)
+                            
+                            @if (CustomItemsTemplate is not null)
                             {
-                                var item = _items[index];
-                                bool isSelected = index == _selectedListItemIndex;
-                                bool isDisabled = !_enabledItemIndices.Contains(index);
-                                bool showSelectedTemplate = ItemSelectedTemplate is not null && isSelected;
-                                bool showDisabledTemplate = ItemDisabledTemplate is not null && isDisabled;
-                                var captureIndex = index;
-                                <MudListItem T="T" Value="@item" @key="@item" id="@GetListItemId(captureIndex)" Disabled="@(isDisabled)" OnClick="@(async () => await ListItemOnClickAsync(item))" OnClickPreventDefault="true" Class="@GetListItemClassname(isSelected)">
-                                    @if (showDisabledTemplate)
-                                    {
-                                        @ItemDisabledTemplate!(item)
-                                    }
-                                    else if (showSelectedTemplate)
-                                    {
-                                        @ItemSelectedTemplate!(item)
-                                    }
-                                    else if (ItemTemplate is not null)
-                                    {
-                                        @ItemTemplate(item)
-                                    }
-                                    else
-                                    {
-                                        @GetItemString(item)
-                                    }
-                                </MudListItem>
+                                @CustomItemsTemplate
                             }
+                            else
+                            {
+                                for (var index = 0; index < _items.Length; index++)
+                                {
+                                    var item = _items[index];
+                                    bool isSelected = index == _selectedListItemIndex;
+                                    bool isDisabled = !_enabledItemIndices.Contains(index);
+                                    bool showSelectedTemplate = ItemSelectedTemplate is not null && isSelected;
+                                    bool showDisabledTemplate = ItemDisabledTemplate is not null && isDisabled;
+                                    var captureIndex = index;
+                                    <MudListItem T="T" Value="@item" @key="@item" id="@GetListItemId(captureIndex)" Disabled="@(isDisabled)" OnClick="@(async () => await ListItemOnClickAsync(item))" OnClickPreventDefault="true" Class="@GetListItemClassname(isSelected)">
+                                        @if (showDisabledTemplate)
+                                        {
+                                            @ItemDisabledTemplate!(item)
+                                        }
+                                        else if (showSelectedTemplate)
+                                        {
+                                            @ItemSelectedTemplate!(item)
+                                        }
+                                        else if (ItemTemplate is not null)
+                                        {
+                                            @ItemTemplate(item)
+                                        }
+                                        else
+                                        {
+                                            @GetItemString(item)
+                                        }
+                                    </MudListItem>
+                                }
+                            }
+
                             @if (MoreItemsTemplate is not null && _returnedItemsCount > MaxItems)
                             {
                                 <div class="mud-autocomplete-more-items pa-1">

@@ -47,5 +47,8 @@ namespace MudBlazor
         [Parameter]
         [Category(CategoryTypes.Card.Behavior)]
         public int Height { get; set; } = 300;
+
+        [Parameter]
+        public RenderFragment? ChildContent { get; set; }
     }
 }
