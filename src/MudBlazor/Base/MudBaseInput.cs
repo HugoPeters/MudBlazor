@@ -147,6 +147,10 @@ namespace MudBlazor
         [Category(CategoryTypes.FormComponent.Behavior)]
         public string? AdornmentText { get; set; }
 
+        [Parameter]
+        [Category(CategoryTypes.FormComponent.Behavior)]
+        public string? ExtraStartAdornmentText { get; set; }
+
         /// <summary>
         /// The location of the adornment icon or text.
         /// </summary>

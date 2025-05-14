@@ -18,6 +18,13 @@
                            AriaLabel="@AdornmentAriaLabel" />
     }
 
+    @if (ExtraStartAdornmentText != null)
+    {
+        <MudInputAdornment Size="@IconSize"
+                           Text=@ExtraStartAdornmentText
+                           Placement="@Adornment.Start" />
+    }
+
     @if (AutoGrow || Lines > 1)
     {
         <textarea class="@InputClassname"
