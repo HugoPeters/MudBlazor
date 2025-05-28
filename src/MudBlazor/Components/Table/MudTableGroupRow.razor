@@ -9,7 +9,7 @@
 <tr class="@HeaderClassname" @onclick="@OnRowClick" style="@HeaderStyle" @attributes="@UserAttributes">        
     @if ((GroupDefinition?.IsThisOrParentExpandable ?? false) || (Context?.Table?.MultiSelection ?? false))
     {
-        <MudTd>
+        <MudTd Style="width:30px;">
             <div class="d-flex">
                 @if (GroupDefinition?.Expandable ?? false)
                 {
