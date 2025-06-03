@@ -27,8 +27,10 @@ namespace MudBlazor
                 }
                 else
                 {
-                    var trimmed = value.Trim(':');
-                    _scope = $":{trimmed}";
+                    // don't do this... let me scope themes myself!
+                    //var trimmed = value.Trim(':');
+                    //_scope = $":{trimmed}";
+                    _scope = value;
                 }
             }
         }
