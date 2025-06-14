@@ -3,8 +3,15 @@
 
 <div @attributes="UserAttributes" class="@Classname" style="@Style" >
     <div class="mud-table-container">
-        <table>
-            @ChildContent
-        </table>
+        @if (OverrideContent == null)
+        {
+            <table>
+                @ChildContent
+            </table>
+        }
+        else
+        {
+            @OverrideContent
+        }
     </div>
 </div>

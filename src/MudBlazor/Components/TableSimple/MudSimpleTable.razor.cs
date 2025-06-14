@@ -114,5 +114,9 @@ namespace MudBlazor
         [Parameter]
         [Category(CategoryTypes.SimpleTable.Behavior)]
         public RenderFragment? ChildContent { get; set; }
+
+        [Parameter]
+        [Category(CategoryTypes.SimpleTable.Behavior)]
+        public RenderFragment? OverrideContent { get; set; }
     }
 }

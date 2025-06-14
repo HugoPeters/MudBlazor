@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Components;
 
 namespace MudBlazor
 {
-    internal interface IMudSelect
+    public interface IMudSelect
     {
         void CheckGenericTypeMatch(object select_item);
         bool MultiSelection { get; set; }
