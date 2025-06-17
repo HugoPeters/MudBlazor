@@ -180,7 +180,7 @@ namespace MudBlazor
             .AddClass($"ms-n{Spacing}");
 
         internal StyleBuilder GetAvatarZindex(MudAvatar avatar) => new StyleBuilder()
-            .AddStyle("z-index", $"{_avatars.Count - _avatars.IndexOf(avatar)}");
+            .AddStyle("z-index", $"-{_avatars.Count - _avatars.IndexOf(avatar)}");
 
         internal bool MaxGroupReached(MudAvatar avatar)
         {
