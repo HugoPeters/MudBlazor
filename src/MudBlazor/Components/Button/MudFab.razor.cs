@@ -76,6 +76,10 @@ namespace MudBlazor
         [Category(CategoryTypes.Button.Appearance)]
         public Color IconColor { get; set; } = Color.Inherit;
 
+        [Parameter]
+        [Category(CategoryTypes.Button.Appearance)]
+        public RenderFragment? ChildContent { get; set; }
+
         /// <summary>
         /// The size of the icon.
         /// </summary>

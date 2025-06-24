@@ -161,6 +161,10 @@ namespace MudBlazor
         [Category(CategoryTypes.FormComponent.Behavior)]
         public Adornment Adornment { get; set; } = Adornment.None;
 
+        [Parameter]
+        [Category(CategoryTypes.FormComponent.Behavior)]
+        public RenderFragment? AdornmentEndContent { get; set; }
+
         /// <summary>
         /// Limits validation to when the user changes the <see cref="Value"/>.
         /// </summary>

@@ -13,15 +13,22 @@
             rel="@GetRel()"
             disabled="@GetDisabledState()"
             ClickPropagation="@GetClickPropagation()">
+        @if (ChildContent != null)
+        {
+            @ChildContent
+        }
+        else
+        {
     <span class="mud-fab-label">
         @if (!string.IsNullOrWhiteSpace(StartIcon))
-        {
-            <MudIcon Disabled="@Disabled" Icon="@StartIcon" Color="@IconColor" Size="@IconSize" />
-        }
-        @Label
-        @if (!string.IsNullOrWhiteSpace(EndIcon))
-        {
-            <MudIcon Disabled="@Disabled" Icon="@EndIcon" Color="@IconColor" Size="@IconSize" />
-        }
-    </span>
+            {
+                <MudIcon Disabled="@Disabled" Icon="@StartIcon" Color="@IconColor" Size="@IconSize" />
+            }
+            @Label
+            if (!string.IsNullOrWhiteSpace(EndIcon))
+            {
+                <MudIcon Disabled="@Disabled" Icon="@EndIcon" Color="@IconColor" Size="@IconSize" />
+            }
+        </span>
+    }
 </MudElement>

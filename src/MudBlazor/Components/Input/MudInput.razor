@@ -128,6 +128,12 @@
                            Placement="@Adornment.End"
                            AdornmentClick="@OnAdornmentClick"
                            AriaLabel="@AdornmentAriaLabel" />
+
+    }
+
+    @if (AdornmentEndContent != null)
+    {
+        @AdornmentEndContent
     }
 
     @if (Variant == Variant.Outlined)
