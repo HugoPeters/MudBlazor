@@ -227,7 +227,7 @@ namespace MudBlazor
             var dialogReference = await ShowCoreAsync(contentComponent, title, parameters, options);
 
             //Do not wait forever, what if render fails because of some internal exception and we will never release the method.
-            var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(1));
             var token = cancellationTokenSource.Token;
             await using (token.Register(() => dialogReference.RenderCompleteTaskCompletionSource.TrySetResult(false)))
             {
