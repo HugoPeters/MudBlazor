@@ -30,7 +30,8 @@
                 <CascadingValue Name="ParentDisabled"
                                 Value="GetDisabledState()">
                     <div @onclick="OpenFilePickerAsync"
-                         disabled="@GetDisabledState()">
+                         disabled="@GetDisabledState()"
+                         class="mud-height-full">
                         @ActivatorContent
                     </div>
                 </CascadingValue>

@@ -8,7 +8,7 @@
     protected override RenderFragment InputContent=>
         @<MudInputControl Label="@Label" Variant="@Variant" HelperText="@HelperText" Error="@Error"
                           ErrorText="@ErrorText" Disabled="@GetDisabledState()" Margin="@Margin" Required="@Required"
-                          @onclick="async () => { if (!Editable) await ToggleStateAsync(); }" ForId="@FieldId">
+                          @onclick="async () => { if (!Editable) await ToggleStateAsync(); }" ForId="@FieldId" >
                <InputContent>
                    <MudRangeInput @ref="_rangeInput"
                                   @attributes="UserAttributes"
@@ -35,7 +35,9 @@
                                   PlaceholderEnd="@PlaceholderEnd"
                                   SeparatorIcon="@SeparatorIcon"
                                   Clearable="@(Clearable && !GetReadOnlyState())"
-                                  Underline="@Underline" />
+                                  Underline="@Underline"
+                                  Typo="@Typo"
+                                  ShrinkLabel="@ShrinkLabel"/>
                </InputContent>
            </MudInputControl>;
 

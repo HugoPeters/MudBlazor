@@ -54,6 +54,7 @@ namespace MudBlazor
             new CssBuilder()
                 .AddClass(PopoverClass)
                 .AddClass("mud-popover-position-override", PositionAtCursor)
+                .AddClass("rounded-lg")
                 .Build();
 
         /// <summary>

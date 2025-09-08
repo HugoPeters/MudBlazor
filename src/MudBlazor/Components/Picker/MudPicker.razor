@@ -35,6 +35,8 @@
                        ErrorText="@ErrorText"
                        Clearable="@(Clearable && !GetReadOnlyState())"
                        OnClearButtonClick="@(async () => await ClearAsync())"
+                       Typo="@Typo"
+                       ShrinkLabel="@ShrinkLabel"
                        @onclick="OnClickAsync" />;
 
 #nullable enable

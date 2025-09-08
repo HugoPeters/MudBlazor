@@ -238,6 +238,13 @@ namespace MudBlazor
         [Parameter]
         [Category(CategoryTypes.FormComponent.Appearance)]
         public bool Underline { get; set; } = true;
+        
+        [Parameter]
+        public Typo Typo { get; set; }
+        
+        [Parameter]
+        public bool ShrinkLabel { get; set; }
+        
 
         /// <summary>
         /// Prevents the input from being changed by the user.

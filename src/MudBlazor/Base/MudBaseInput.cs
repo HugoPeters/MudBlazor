@@ -266,7 +266,7 @@ namespace MudBlazor
         /// </remarks>
         [Parameter]
         [Category(CategoryTypes.FormComponent.Validation)]
-        public int MaxLength { get; set; } = 524288;
+        public int MaxLength { get; set; } = 1024;
 
         /// <summary>
         /// The label for this input.
