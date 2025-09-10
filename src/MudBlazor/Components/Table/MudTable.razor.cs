@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using MudBlazor.Extensions;
+using MudBlazor.Utilities;
 
 namespace MudBlazor
 {
@@ -33,6 +29,11 @@ namespace MudBlazor
 
         [MemberNotNullWhen(true, nameof(ServerData))]
         internal override bool HasServerData => ServerData is not null;
+
+        protected string TableClassname =>
+            new CssBuilder("mud-table-root")
+                .AddClass(TableClass)
+                .Build();
 
         /// <summary>
         /// The columns for each row in this table.
@@ -136,11 +137,33 @@ namespace MudBlazor
         public RenderFragment? NoRecordsContent { get; set; }
 
         /// <summary>
-        /// The content shown while table data is loading and the table has no rows.
+        /// The content shown while <c>Loading</c> is <c>true</c> and the table has no rows.
         /// </summary>
+        /// <remarks>
+        /// Rendered as a single table row containing one cell that spans the table width.
+        /// Use this for simple messages or placeholders (for example "Loading…").<br/>
+        /// This content is displayed in addition to the table's loading animation.<br/>
+        /// For multi-row or multi-column loading layouts, use <see cref="LoadingContentBody"/> instead.
+        /// </remarks>
         [Parameter]
         [Category(CategoryTypes.Table.Data)]
         public RenderFragment? LoadingContent { get; set; }
+
+        /// <summary>
+        /// The content shown while <c>Loading</c> is <c>true</c> and the table has no rows.
+        /// </summary>
+        /// <remarks>
+        /// Rendered directly into the table body at the top.
+        /// You must supply valid table row/cell markup (for example <c>&lt;MudTr&gt;</c> and <c>&lt;MudTd&gt;</c>).
+        /// If you place plain text or non-table markup here most browsers will ignore it.
+        /// Use this when you need to produce arbitrary rows and columns while the table is loading.<br/>
+        /// This content is displayed in addition to the table's loading animation.<br/>
+        /// For a single row column loading layout or text, use <see cref="LoadingContent"/> instead.<br/>
+        /// This value is optional, and will override <see cref="LoadingContent"/> if not <c>null</c>.
+        /// </remarks>
+        [Parameter]
+        [Category(CategoryTypes.Table.Data)]
+        public RenderFragment? LoadingContentBody { get; set; }
 
         /// <summary>
         /// Shows a horizontal scroll bar if the content exceeds the maximum width.
@@ -379,6 +402,13 @@ namespace MudBlazor
                     _groupBy.Context = Context;
             }
         }
+
+        /// <summary>
+        /// The custom CSS classes to apply to the table.
+        /// </summary>
+        [Parameter]
+        [Category(CategoryTypes.Table.Appearance)]
+        public string? TableClass { get; set; }
 
         /// <summary>
         /// The content for the header of each group when <see cref="GroupBy"/> is set.

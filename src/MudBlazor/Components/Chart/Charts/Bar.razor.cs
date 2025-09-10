@@ -109,7 +109,7 @@ namespace MudBlazor.Charts
                 {
                     X = HorizontalStartSpace - 10,
                     Y = _boundHeight - y + 5,
-                    Value = ToS(startGridY, MudChartParent?.ChartOptions.YAxisFormat)
+                    Value = BuildYAxisValueString(startGridY)
                 };
                 _horizontalValues.Add(lineValue);
             }
@@ -153,10 +153,11 @@ namespace MudBlazor.Charts
 
                 for (var j = 0; j < data.Length; j++)
                 {
+                    var dataValue = data[j];
                     var gridValueX = HorizontalStartSpace + (BarStroke / 2) + (i * BarGap) + (j * horizontalSpace);
                     var gridValueY = _boundHeight - VerticalStartSpace + (lowestHorizontalLine * verticalSpace);
-                    var dataValue = ((data[j] / gridYUnits) - lowestHorizontalLine) * verticalSpace;
-                    var gridValue = _boundHeight - VerticalStartSpace - dataValue;
+                    var barHeight = ((dataValue / gridYUnits) - lowestHorizontalLine) * verticalSpace;
+                    var gridValue = _boundHeight - VerticalStartSpace - barHeight;
 
                     var bar = new SvgPath()
                     {

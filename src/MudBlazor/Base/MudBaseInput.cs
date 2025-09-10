@@ -1,6 +1,7 @@
 ﻿using System.Globalization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.JSInterop;
 using MudBlazor.State;
 using MudBlazor.Utilities;
 
@@ -40,6 +41,9 @@ namespace MudBlazor
                 .WithParameter(() => InputId)
                 .WithChangeHandler(UpdateInputIdStateAsync);
         }
+
+        [Inject]
+        private IJSRuntime JsRuntime { get; set; } = null!;
 
         /// <summary>
         /// Allows the component to receive input.
@@ -206,7 +210,7 @@ namespace MudBlazor
         public Size IconSize { get; set; } = Size.Medium;
 
         /// <summary>
-        /// Occurs when the adornment text or icon has been clicked.
+        /// Occurs when the adornment icon (but not the text) has been clicked.
         /// </summary>
         [Parameter]
         public EventCallback<MouseEventArgs> OnAdornmentClick { get; set; }
@@ -501,6 +505,8 @@ namespace MudBlazor
 
         protected internal virtual async Task OnBlurredAsync(FocusEventArgs obj)
         {
+            _isFocused = false;
+
             if (ReadOnly)
             {
                 return;
@@ -508,8 +514,6 @@ namespace MudBlazor
 
             // all the OnBlur parents (TextField, MudMask, NumericField, DateRange, etc) currently point to this method
             // which causes this method to be fired repeatedly, we can use the obj.Type of FocusedEventArgs to track it
-
-            _isFocused = false;
 
             if (!OnlyValidateIfDirty || _isDirty)
             {
@@ -679,10 +683,10 @@ namespace MudBlazor
         /// <inheritdoc />
         public override async Task SetParametersAsync(ParameterView parameters)
         {
-            await base.SetParametersAsync(parameters);
-
             var hasText = parameters.Contains<string>(nameof(Text));
             var hasValue = parameters.Contains<T>(nameof(Value));
+
+            await base.SetParametersAsync(parameters);
 
             // Refresh Value from Text
             if (hasText && !hasValue)

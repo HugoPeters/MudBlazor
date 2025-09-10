@@ -5,6 +5,7 @@ using Bunit;
 using FluentAssertions;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using MudBlazor.UnitTests.TestComponents.DataGrid;
 using MudBlazor.UnitTests.TestComponents.Table;
 using NUnit.Framework;
 
@@ -13,6 +14,15 @@ namespace MudBlazor.UnitTests.Components
     [TestFixture]
     public class TableTests : BunitTest
     {
+        [Test]
+        public void CustomTableClass()
+        {
+            var comp = Context.RenderComponent<TableRowClickTest>();
+            var table = comp.FindComponent<MudTable<int>>();
+            table.SetParametersAndRender(parameters => parameters.Add(x => x.TableClass, "table-custom-class"));
+            table.Markup.Should().Contain("class=\"mud-table-root table-custom-class\"");
+        }
+
         /// <summary>
         /// OnRowClick event callback should be fired regardless of the selection state
         /// </summary>
@@ -247,7 +257,7 @@ namespace MudBlazor.UnitTests.Components
         }
 
         /// <summary>
-        /// Check if if empty row text is correct
+        /// Check if empty row text is correct when using LoadingContent
         /// </summary>
         [Test]
         public void TableHeadContentTest()
@@ -270,6 +280,40 @@ namespace MudBlazor.UnitTests.Components
             switchElement.Change(true);
             comp.FindAll("tr").Count.Should().Be(3);
             comp.FindAll("tr")[2].TextContent.Should().Be("Loading...");
+        }
+
+        /// <summary>
+        /// Check if empty row text is correct when using LoadingContentBody
+        /// </summary>
+        [Test]
+        public void TableHeadContentBodyTest()
+        {
+            var comp = Context.RenderComponent<TableLoadingBodyTest>();
+            var searchString = comp.Find("#searchString");
+            var switchElement = comp.Find("#switch");
+
+            searchString.Input(null);
+            switchElement.Change(false);
+
+            // It should be equal to 3 = two rows + header row
+            comp.FindAll("tr").Count.Should().Be(3);
+
+            // There should be no skeletons.
+            comp.FindAll(".mud-skeleton").Count.Should().Be(0);
+
+            // Filter out all table rows
+            searchString.Input("ZZZ");
+
+            // It should be equal to 2 = two rows + header row
+            comp.FindAll("tr").Count.Should().Be(2);
+            comp.FindAll("tr")[1].TextContent.Should().Be("No matching records found");
+
+            // It should be equal to 6 = 4 loading rows + header row + loading row
+            switchElement.Change(true);
+            comp.FindAll("tr").Count.Should().Be(6);
+
+            // It should be equal to 20 = 4 rows * 5 colmns
+            comp.FindAll(".mud-skeleton").Count.Should().Be(20);
         }
 
         /// <summary>
@@ -2108,6 +2152,128 @@ namespace MudBlazor.UnitTests.Components
         }
 
         /// <summary>
+        /// A table with 3 unexpanded groups. The first group is expanded, next removed.
+        /// The other groups remain unexpanded.
+        /// </summary>
+        /// <remarks>
+        /// https://github.com/MudBlazor/MudBlazor/issues/10250
+        /// </remarks>
+        [Test]
+        public void TableGrouping_ExpandFirstGroupAndRemoveIt_OtherGroupsRemainUnexpanded()
+        {
+            // Arrange
+
+            var comp = Context.RenderComponent<TableGroupingTest3>();
+            var table = comp.Instance.TableInstance;
+            comp.Render();
+
+            // Assert : Three groups are unexpanded
+
+            table.Context.GroupRows.Count.Should().Be(3);
+            table.Context.GroupRows.ElementAt(0).Expanded.Should().BeFalse();
+            table.Context.GroupRows.ElementAt(1).Expanded.Should().BeFalse();
+            table.Context.GroupRows.ElementAt(2).Expanded.Should().BeFalse();
+
+            // Act : Expend the first group
+
+            comp.FindAll("button")[0].Click();
+
+            // Assert : Only the first group is expanded
+
+            table.Context.GroupRows.Count.Should().Be(3);
+            table.Context.GroupRows.ElementAt(0).Expanded.Should().BeTrue();
+            table.Context.GroupRows.ElementAt(1).Expanded.Should().BeFalse();
+            table.Context.GroupRows.ElementAt(2).Expanded.Should().BeFalse();
+
+            // Act : Remove the first group
+
+            comp.Instance.Items.RemoveAll(i => i.Group == "One");
+            comp.Render();
+
+            // Assert : Two groups are unexpanded
+
+            table.Context.GroupRows.Count.Should().Be(2);
+            table.Context.GroupRows.ElementAt(0).Expanded.Should().BeFalse();
+            table.Context.GroupRows.ElementAt(1).Expanded.Should().BeFalse();
+        }
+
+        /// <summary>
+        /// A table with unexpanded groups and unexpanded nested groups.
+        /// The first group and its first nested group are expanded. Then remove the first nested group.
+        /// The other nested group remains unexpanded.
+        /// </summary>
+        /// <remarks>
+        /// https://github.com/MudBlazor/MudBlazor/issues/10250
+        /// </remarks>
+        [Test]
+        public void TableGrouping_ExpandFirstNestedGroupAndRemoveIt_OtherNestedGroupsRemainUnexpanded()
+        {
+            // Arrange
+
+            var comp = Context.RenderComponent<TableGroupingNestedTest>();
+            var table = comp.Instance.TableInstance;
+            comp.Render();
+
+            // Assert : All groups are unexpanded
+
+            {
+                var groups = table.Context.GroupRows;
+                groups.Count.Should().Be(3);
+                groups.Single(g => g.Items.Key.ToString() == "G1").Expanded.Should().BeFalse();
+                groups.Single(g => g.Items.Key.ToString() == "G2").Expanded.Should().BeFalse();
+                groups.Single(g => g.Items.Key.ToString() == "G3").Expanded.Should().BeFalse();
+            }
+
+            // Act : Expend the first group
+
+            comp.FindAll("button")[0].Click();
+
+            // Assert : Only the first group is expanded
+
+            {
+                var groups = table.Context.GroupRows;
+                groups.Count.Should().Be(5);
+                groups.Single(g => g.Items.Key.ToString() == "G1").Expanded.Should().BeTrue();
+                groups.Single(g => g.Items.Key.ToString() == "G1 > N1").Expanded.Should().BeFalse();
+                groups.Single(g => g.Items.Key.ToString() == "G1 > N2").Expanded.Should().BeFalse();
+                groups.Single(g => g.Items.Key.ToString() == "G2").Expanded.Should().BeFalse();
+                groups.Single(g => g.Items.Key.ToString() == "G3").Expanded.Should().BeFalse();
+            }
+
+            // Act : Expand the first nested group in the first group
+
+            comp.FindAll("button")[1].Click();
+
+            // Assert : Only the first group and its first nested group are expanded
+
+            {
+                var groups = table.Context.GroupRows;
+                groups.Count.Should().Be(5);
+                groups.Single(g => g.Items.Key.ToString() == "G1").Expanded.Should().BeTrue();
+                groups.Single(g => g.Items.Key.ToString() == "G1 > N1").Expanded.Should().BeTrue();
+                groups.Single(g => g.Items.Key.ToString() == "G1 > N2").Expanded.Should().BeFalse();
+                groups.Single(g => g.Items.Key.ToString() == "G2").Expanded.Should().BeFalse();
+                groups.Single(g => g.Items.Key.ToString() == "G3").Expanded.Should().BeFalse();
+            }
+
+            // Act : Remove the first nested group in first group
+
+            comp.Instance.Items.RemoveAll(i => i.Group == "G1" && i.Nested == "N1");
+            comp.Render();
+
+            // Assert : Only the first group is expanded and its remaining nested group is unexpanded
+
+            {
+                var groups = table.Context.GroupRows;
+                groups.Count.Should().Be(4);
+                groups.Single(g => g.Items.Key.ToString() == "G1").Expanded.Should().BeTrue();
+                groups.Single(g => g.Items.Key.ToString() == "G1 > N2").Expanded.Should().BeFalse();
+                groups.Single(g => g.Items.Key.ToString() == "G2").Expanded.Should().BeFalse();
+                groups.Single(g => g.Items.Key.ToString() == "G3").Expanded.Should().BeFalse();
+            }
+        }
+
+        /// <summary>
         /// Tests the grouping behavior and ensure that it won't break anything else.
         /// </summary>
         /// <returns></returns>
@@ -2201,10 +2367,10 @@ namespace MudBlazor.UnitTests.Components
         /// Tests the correct output when filter does not return any matching elements
         /// </summary>
         [Test]
-        public void TablePagerInfoTextTest()
+        public void TablePagerInfoTextTest1()
         {
             // create the component
-            var tableComponent = Context.RenderComponent<TablePagerInfoTextTest>();
+            var tableComponent = Context.RenderComponent<TablePagerInfoTextTest1>();
 
             // print the generated html
 
@@ -2233,6 +2399,23 @@ namespace MudBlazor.UnitTests.Components
         }
 
         /// <summary>
+        /// Tests the correct output when custom info format provided
+        /// </summary>
+        [Test]
+        [TestCase("", "1-3 of 3")]
+        [TestCase("Test", "Test")]
+        [TestCase("{first_item}-{last_item}/{all_items}", "1-3/3")]
+        public void TablePagerInfoTextTest2(string infoFormat, string expectedInfoText)
+        {
+            // create the component
+            var tableComponent = Context.RenderComponent<TablePagerInfoTextTest2>(parameters => parameters
+                .Add(p => p.InfoFormat, infoFormat));
+
+            // assert correct info-text
+            tableComponent.Find("div.mud-table-page-number-information").Text().Should().Be(expectedInfoText);
+        }
+
+        /// <summary>
         /// Tests the aria-labels for the pager control buttons
         /// </summary>
         /// <param name="controlButton">The type of the control button. Page.First for the navigate-to-first-page button.</param>
@@ -2244,7 +2427,7 @@ namespace MudBlazor.UnitTests.Components
         [Test]
         public void TablePagerControlButtonAriaLabelTest(Page controlButton, string expectedButtonAriaLabel)
         {
-            var tableComponent = Context.RenderComponent<TablePagerInfoTextTest>();
+            var tableComponent = Context.RenderComponent<TablePagerInfoTextTest1>();
 
             //get control button
             var buttons = tableComponent.FindAll("div.mud-table-pagination-actions button");
@@ -2518,6 +2701,30 @@ namespace MudBlazor.UnitTests.Components
             comp.FindAll(".mud-table-pagination-actions .mud-button-root")[2].Click();
             comp.WaitForAssertion(() => table.CurrentPage.Should().Be(2));
             comp.WaitForAssertion(() => comp.Find(".mud-table-body .mud-table-row .mud-table-cell").TextContent.Should().Be("3"));
+        }
+
+        /// <summary>
+        /// Table initialized to display the third page
+        /// </summary>
+        /// <remarks>
+        /// Table.CurrentPage start at 0, so 2 is the second page
+        /// https://github.com/MudBlazor/MudBlazor/issues/11727
+        /// </remarks>
+        [Test]
+        public void Table_WithCurrentPage_ShouldFirstRenderThisPage()
+        {
+            // Arrange
+
+            var comp = Context.RenderComponent<TableCurrentPageParameterIntialized>();
+            var table = comp.FindComponent<MudTable<int>>().Instance;
+
+            // Assert : DataGrid is initialized with CurrentPage at 2
+
+            table.CurrentPage.Should().Be(2);
+
+            // Assert : The first item in the third page is 20
+
+            comp.Find(".mud-table-body .mud-table-row .mud-table-cell").TextContent.Should().Be("20");
         }
 
         [Test]
