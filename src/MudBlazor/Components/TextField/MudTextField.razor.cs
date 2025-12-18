@@ -179,7 +179,7 @@ namespace MudBlazor
         /// Sets the <see cref="MudBaseInput{T}.Text"/> to the specified value.
         /// </summary>
         /// <param name="text">The new text value to use.</param>
-        public async Task SetText(string text)
+        public async Task SetText(string? text)
         {
             if (!HasMask)
             {
@@ -195,16 +195,16 @@ namespace MudBlazor
         {
             if (HasMask)
             {
-                var textValue = Converter.Set(value);
+                var textValue = ConvertSet(value);
                 _mask.SetText(textValue);
                 textValue = Mask.GetCleanText();
-                value = Converter.Get(textValue);
+                value = ConvertGet(textValue);
             }
 
             return base.SetValueAsync(value, updateText, force);
         }
 
-        protected override Task SetTextAsync(string? text, bool updateValue = true)
+        protected override Task SetTextAndUpdateValueAsync(string? text, bool updateValue = true)
         {
             if (HasMask)
             {
@@ -212,7 +212,7 @@ namespace MudBlazor
                 text = _mask.Text;
             }
 
-            return base.SetTextAsync(text, updateValue);
+            return base.SetTextAndUpdateValueAsync(text, updateValue);
         }
 
         internal override InputType GetInputType() => InputType;
@@ -224,13 +224,13 @@ namespace MudBlazor
             return Clearable && !GetDisabledState();
         }
 
-        private Task OnMaskedValueChanged(string s) => SetTextAsync(s);
+        private Task OnMaskedValueChanged(string s) => SetTextAndUpdateValueAsync(s);
 
         private string GetCounterText() => Counter switch
         {
             null => string.Empty,
-            0 => (string.IsNullOrEmpty(Text) ? "0" : $"{Text.Length}"),
-            _ => (string.IsNullOrEmpty(Text) ? "0" : $"{Text.Length}") + $" / {Counter}"
+            0 => (string.IsNullOrEmpty(ReadText) ? "0" : $"{ReadText.Length}"),
+            _ => (string.IsNullOrEmpty(ReadText) ? "0" : $"{ReadText.Length}") + $" / {Counter}"
         };
 
         protected async Task HandleContainerClick()

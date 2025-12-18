@@ -15,7 +15,7 @@
                          Style="@Style"
                          Error="@HasErrors"
                          ErrorText="@GetErrorText()"
-                         ErrorId="@ErrorId"
+                         ErrorId="@ErrorIdState.Value"
                          Disabled="@GetDisabledState()"
                          Required="@Required"
                          @onmousedown="@OnInputClickedAsync"
@@ -28,11 +28,11 @@
                           Typo="@Typo"
                           Label="@Label"
                           TextUpdateSuppression="@TextUpdateSuppression"
-                          Value="@Text" Underline="@Underline"
+                          Value="@ReadText" Underline="@Underline"
                           Disabled="@GetDisabledState()"
                           ReadOnly="@GetReadOnlyState()"
-                          Error="@Error"
-                          ErrorId="@ErrorId"
+                          Error="@ErrorState.Value"
+                          ErrorId="@ErrorIdState.Value"
                           HelperId="@GetHelperId()"
                           HelperText="@HelperText"
                           ExtraStartAdornmentText=@ExtraStartAdornmentText
@@ -71,13 +71,13 @@
                 }
 
                 <MudPopover Open="@Open"
-                Class="@PopoverClass"
-                MaxHeight="@MaxHeight"
-                RelativeWidth="@RelativeWidth"
-                AnchorOrigin="@AnchorOrigin"
-                TransformOrigin="@TransformOrigin"
-                Fixed="@DropdownSettings.Fixed"
-                OverflowBehavior="@DropdownSettings.OverflowBehavior">
+                            Class="@PopoverClass"
+                            MaxHeight="@MaxHeight"
+                            RelativeWidth="@RelativeWidth"
+                            AnchorOrigin="@AnchorOrigin"
+                            TransformOrigin="@TransformOrigin"
+                            Fixed="@PopoverFixed"
+                            OverflowBehavior="@OverflowBehavior">
                     @if (ProgressIndicatorInPopoverTemplate is not null && IsLoading)
                     {
                         @ProgressIndicatorInPopoverTemplate

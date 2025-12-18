@@ -63,7 +63,8 @@
                     <SectionHeader Title="Custom Activator">
                         <Description>
                             If the regular customization options are not enough, use the <CodeInline>ActivatorContent</CodeInline> render fragment to define a custom activator element for opening the menu.
-                            In this example, a custom button, chip, and avatar are each used to open a menu.
+                            In this example, a custom button, chip, and avatar are each used to open a menu. When generating activator elements inside a Blazor code block (<CodeInline>&#64;{ ... }</CodeInline>) or conditional markup, ensure that the element includes
+							<CodeInline>tabindex="0"</CodeInline> so it can receive focus and remain accessible via keyboard input.
                         </Description>
                     </SectionHeader>
                     <SectionContent Code="@nameof(MenuActivatorExample1)" ShowCode="false">
@@ -203,13 +204,13 @@
                 </DocsPageSection>
 
                 <DocsPageSection>
-                    <SectionHeader Title="DropdownSettings">
+                    <SectionHeader Title="Popover Settings">
                         <Description>
                             This component leverages <MudLink Href="/components/popover">MudPopover</MudLink> along with
                             <MudLink Href="/components/overlay">MudOverlay</MudLink> to manage its item list.
-                            You can configure certain aspects using <CodeInline>DropdownSettings</CodeInline>,
+                            You can configure certain aspects using <CodeInline>PopoverFixed</CodeInline> and <CodeInline>OverflowBehavior</CodeInline>,
                             which sets default appearance and behavior properties.
-                            Learn more on the <MudLink Color="Color.Secondary" Href="/components/popover#dropdownsettings">popover documentation page.</MudLink>
+                            Learn more on the <MudLink Color="Color.Secondary" Href="/components/popover#individual-dropdown-settings">popover documentation page.</MudLink>
                         </Description>
                     </SectionHeader>
                 </DocsPageSection>

@@ -253,11 +253,7 @@ namespace MudBlazor
         internal bool _isEditFormOpen;
 
         // converters
-        private Converter<bool, bool?> _oppositeBoolConverter = new Converter<bool, bool?>
-        {
-            SetFunc = value => !value,
-            GetFunc = value => !value ?? true,
-        };
+        private readonly IConverter<bool, bool?> _oppositeBoolConverter = Conversions.From(value => !value, (bool? value) => !value ?? true);
 
         #region Notify Children Delegates
 
@@ -471,10 +467,9 @@ namespace MudBlazor
         /// </summary>
         /// <remarks>
         /// Defaults to <c>false</c>.
-        /// Override with <see cref="MudGlobal.Rounded"/>.
         /// </remarks>
         [Parameter]
-        public bool Square { get; set; } = MudGlobal.Rounded == false;
+        public bool Square { get; set; }
 
         /// <summary>
         /// Shows an outline around this grid.
@@ -568,6 +563,24 @@ namespace MudBlazor
         /// </remarks>
         [Parameter]
         public bool ShowFilterIcons { get; set; } = true;
+
+        /// <summary>
+        /// The empty filter icon shown on a column when <see cref="Filterable"/> is <c>true</c> and no filters are applied to this column.
+        /// </summary>
+        [Parameter]
+        public string FilterIconEmpty { get; set; } = Icons.Material.Outlined.FilterAlt;
+
+        /// <summary>
+        /// The filled filter icon shown on a column when <see cref="Filterable"/> is <c>true</c> and filters are applied to this column.
+        /// </summary>
+        [Parameter]
+        public string FilterIconFilled { get; set; } = Icons.Material.Filled.FilterAlt;
+
+        /// <summary>
+        /// The clear filter icon shown on a column when <see cref="Filterable"/> is <c>true</c> to remove filters applied to this column.
+        /// </summary>
+        [Parameter]
+        public string FilterIconClear { get; set; } = Icons.Material.Filled.FilterAltOff;
 
         /// <summary>
         /// The way that this grid filters data.
@@ -930,6 +943,15 @@ namespace MudBlazor
         public RenderFragment<CellContext<T>> ChildRowContent { get; set; }
 
         /// <summary>
+        /// The custom renderer function for child row content.
+        /// </summary>
+        /// <remarks>
+        /// This provides an alternative to <see cref="ChildRowContent"/> with more control over the rendering.
+        /// </remarks>
+        [Parameter]
+        public RenderFragment<CellContext<T>> ChildRowRenderer { get; set; }
+
+        /// <summary>
         /// The content shown when there are no rows to display.
         /// </summary>
         [Parameter]
@@ -957,7 +979,7 @@ namespace MudBlazor
         /// The function accepts a <see cref="GridState{T}"/> with current sorting, filtering, and pagination parameters.  Then, return a <see cref="GridData{T}"/> with a page of values, and the total (unpaginated) items set in <see cref="GridData{T}.TotalItems"/>.  When set, the <see cref="Items"/> property cannot be set.
         /// </remarks>
         [Parameter]
-        public Func<GridState<T>, Task<GridData<T>>> ServerData { get; set; }
+        public Func<GridState<T>, CancellationToken, Task<GridData<T>>> ServerData { get; set; }
 
         /// <summary>
         /// The function which gets data for this grid.
@@ -1038,7 +1060,7 @@ namespace MudBlazor
         /// <remarks>
         /// This property can be bound (<c>@bind-SelectedItems</c>) to initially select rows.  Use <see cref="SelectedItem"/> when <see cref="MultiSelection"/> is <c>false</c>.
         /// </remarks>
-        [Parameter]
+        [Parameter, ParameterState]
         public HashSet<T> SelectedItems { get; set; }
 
         /// <summary>
@@ -1047,7 +1069,7 @@ namespace MudBlazor
         /// <remarks>
         /// This property can be bound (<c>@bind-SelectedItem</c>) to initially select a row.  Use <see cref="SelectedItems"/> when <see cref="MultiSelection"/> is <c>true</c>.
         /// </remarks>
-        [Parameter]
+        [Parameter, ParameterState]
         public T SelectedItem { get; set; }
 
         /// <summary>
@@ -1135,7 +1157,7 @@ namespace MudBlazor
         /// Ensures the user can only expand one Hierarchy row at a time. This only has an effect if you are using a Hierarchy column.
         /// </summary>
         /// <remarks>Defaults to <c>false</c>.</remarks>
-        [Parameter]
+        [Parameter, ParameterState]
         public bool ExpandSingleRow { get; set; }
 
         /// <summary>
@@ -1472,7 +1494,10 @@ namespace MudBlazor
                     FilterDefinitions = FilterDefinitions.ToList()
                 };
 
-                _serverData = await ServerData(state);
+                // Cancel any prior request
+                CancelServerDataToken();
+
+                _serverData = await ServerData(state, _serverDataCancellationTokenSource.Token);
                 _currentRenderFilteredItemsCache = null;
 
                 if (CurrentPage * RowsPerPage > _serverData.TotalItems)
@@ -1541,6 +1566,7 @@ namespace MudBlazor
             try
             {
                 _serverDataCancellationTokenSource?.Cancel();
+                _serverDataCancellationTokenSource?.Dispose();
             }
             catch { /*ignored*/ }
             finally
@@ -2349,21 +2375,6 @@ namespace MudBlazor
         }
 
         /// <summary>
-        /// Expands all groups.
-        /// </summary>
-        /// <remarks>
-        /// Applies when <see cref="Groupable"/> is <c>true</c>.
-        /// </remarks>
-        [Obsolete("Use ExpandAllGroupsAsync instead")]
-        public void ExpandAllGroups()
-        {
-            if (_groupDefinition != null && _groupable)
-            {
-                ToggleGroupExpandRecursively(true).CatchAndLog();
-            }
-        }
-
-        /// <summary>
         /// Collapses all groups async.
         /// </summary>
         /// <remarks>
@@ -2374,21 +2385,6 @@ namespace MudBlazor
             if (_groupDefinition != null && _groupable)
             {
                 await ToggleGroupExpandRecursively(false);
-            }
-        }
-
-        /// <summary>
-        /// Collapses all groups.
-        /// </summary>
-        /// <remarks>
-        /// Applies when <see cref="Groupable"/> is <c>true</c>.
-        /// </remarks>
-        [Obsolete("Use CollapseAllGroupsAsync instead")]
-        public void CollapseAllGroups()
-        {
-            if (_groupDefinition != null && _groupable)
-            {
-                ToggleGroupExpandRecursively(false).CatchAndLog();
             }
         }
 
