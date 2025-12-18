@@ -99,6 +99,9 @@ namespace MudBlazor
 
             return true;
         }
+        
+        [Parameter]
+        public RenderFragment FooterContent { get; set; }
 
         /// <summary>
         /// The day representing the first day of the week.
@@ -424,7 +427,7 @@ namespace MudBlazor
             {
                 await SubmitAsync();
 
-                if (PickerVariant != PickerVariant.Static)
+                if (PickerVariant != PickerVariant.Static && ClosingDelay >= 0)
                 {
                     await Task.Delay(ClosingDelay);
                     await CloseAsync(false);
