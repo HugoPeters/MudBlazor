@@ -7,16 +7,23 @@
     {
         <span class="@WrapperClass">
             <span role="status" aria-live="polite" aria-label="@BadgeAriaLabel" class="@BadgeClassname" @onclick="this.AsNonRenderingEventHandler<MouseEventArgs>(HandleBadgeClick)">
-                @if (!Dot)
+                @if (BadgeContent != null)
                 {
-                    @if (!string.IsNullOrEmpty(Icon))
+                    if (!Dot)
                     {
-                        <MudIcon Icon="@Icon" Class="mud-icon-badge" />
+                        @if (!string.IsNullOrEmpty(Icon))
+                        {
+                            <MudIcon Icon="@Icon" Class="mud-icon-badge" />
+                        }
+                        else
+                        {
+                            @_content
+                        }
                     }
-                    else
-                    {
-                        @_content
-                    }
+                }
+                else
+                {
+                    @BadgeContent
                 }
             </span>
         </span>

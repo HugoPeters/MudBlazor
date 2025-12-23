@@ -16,7 +16,7 @@
 #nullable enable
 }
 
-@if (!Options.Drawer)
+@if (!GetDialogOptionsOrDefault.Drawer)
 {
     <div @attributes="UserAttributes" id="@_elementId" class="mud-dialog-container @GetPosition()">
         <MudOverlay Visible="true" OnClick="HandleBackgroundClickAsync" Class="@BackgroundClassname" DarkBackground="true" @onmouseup="OnMouseUp"/>

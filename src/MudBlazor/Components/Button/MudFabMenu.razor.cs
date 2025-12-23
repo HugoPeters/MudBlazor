@@ -73,7 +73,7 @@ public partial class MudFabMenu : MudFab
     /// Note that you can add any component you like as long as it has the <c>mud-fab-menu-item</c> class.
     /// </remarks>
     [Parameter, Category(CategoryTypes.Menu.PopupBehavior)]
-    public RenderFragment? ChildContent { get; set; }
+    public new RenderFragment? ChildContent { get; set; }
 
     /// <summary>
     /// Whether this menu is open and the menu items are visible.

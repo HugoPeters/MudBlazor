@@ -154,6 +154,10 @@ namespace MudBlazor
         [Parameter]
         [Category(CategoryTypes.Badge.Behavior)]
         public RenderFragment? ChildContent { get; set; }
+        
+        [Parameter]
+        [Category(CategoryTypes.Badge.Behavior)]
+        public RenderFragment? BadgeContent { get; set; }
 
         /// <summary>
         /// Occurs when the badge has been clicked.

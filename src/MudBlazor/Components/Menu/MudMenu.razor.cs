@@ -54,7 +54,8 @@ namespace MudBlazor
         /// The CSS class for the root menu container.
         /// </summary>
         protected string Classname =>
-            new CssBuilder("mud-menu")
+            new CssBuilder()
+                .AddClass("mud-menu", !NoMenuClass)
                 .AddClass("mud-menu-button-hidden", GetActivatorHidden())
                 .AddClass(Class)
                 .Build();
@@ -208,6 +209,9 @@ namespace MudBlazor
         [Parameter]
         [Category(CategoryTypes.Menu.PopupAppearance)]
         public bool Dense { get; set; }
+        
+        [Parameter]
+        public bool NoMenuClass { get; set; }
 
         /// <summary>
         /// Expands this menu to the same width as its parent.
