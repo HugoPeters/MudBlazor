@@ -409,5 +409,10 @@ namespace MudBlazor
         /// The text transformation.
         /// </summary>
         public string TextTransform { get; set; } = "none";
+        
+        /// <summary>
+        /// The text optical sizing.
+        /// </summary>
+        public string OpticalSizing { get; set; } = "none";
     }
 }

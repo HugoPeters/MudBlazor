@@ -13,6 +13,7 @@ $typography-types: ("h1", "h2", "h3", "h4", "h5", "h6", "subtitle1", "subtitle2"
     line-height: var(--mud-typography-#{$type}-lineheight);
     letter-spacing: var(--mud-typography-#{$type}-letterspacing);
     text-transform: var(--mud-typography-#{$type}-text-transform);
+    font-optical-sizing: var(--mud-typography-#{$type}-optical-sizing);
   }
 }
 

@@ -232,9 +232,9 @@ namespace MudBlazor
         [Parameter]
         [Category(CategoryTypes.FormComponent.Appearance)]
         public bool Underline { get; set; } = true;
-        
-        [Parameter]
-        public Typo Typo { get; set; }
+
+        [Parameter] 
+        public Typo Typo { get; set; } = Typo.body2;
 
 
         /// <summary>
