@@ -16,7 +16,7 @@ namespace MudBlazor
     /// <typeparam name="T">The type of value being chosen.</typeparam>
     /// <seealso cref="MudPickerContent" />
     /// <seealso cref="MudPickerToolbar" />
-    public partial class MudPicker<T> : MudFormComponent<T, string>
+    public abstract partial class MudPicker<T> : MudFormComponent<T, string>
     {
         private string? _text;
         private bool _pickerSquare;
@@ -27,6 +27,9 @@ namespace MudBlazor
         [Inject]
         private IKeyInterceptorService KeyInterceptorService { get; set; } = null!;
 
+        [Inject]
+        private IPopoverService PopoverService { get; set; } = null!;
+
         protected string PickerClassname =>
             new CssBuilder("mud-picker")
                 .AddClass("mud-picker-inline", PickerVariant != PickerVariant.Static)
@@ -35,7 +38,7 @@ namespace MudBlazor
                 .AddClass($"mud-elevation-{Elevation ?? 0}", PickerVariant != PickerVariant.Inline)
                 .AddClass("mud-picker-input-button", !Editable && PickerVariant != PickerVariant.Static)
                 .AddClass("mud-picker-input-text", Editable && PickerVariant != PickerVariant.Static)
-                .AddClass("mud-disabled", GetDisabledState() && PickerVariant != PickerVariant.Static)
+                .AddClass("mud-disabled", GetDisabledState())
                 .AddClass(Class)
                 .Build();
 
@@ -50,8 +53,11 @@ namespace MudBlazor
 
         protected string PickerPaperStylename =>
             new StyleBuilder()
-                .AddStyle("transition-duration", $"{Math.Round(MudGlobal.TransitionDefaults.Duration.TotalMilliseconds)}ms")
-                .AddStyle("transition-delay", $"{Math.Round(MudGlobal.TransitionDefaults.Delay.TotalMilliseconds)}ms")
+                .AddStyle("transition-duration", $"{Math.Round(PopoverService.PopoverOptions.Duration.TotalMilliseconds)}ms")
+                .AddStyle("transition-delay", $"{Math.Round(PopoverService.PopoverOptions.Delay.TotalMilliseconds)}ms")
+                .AddStyle("opacity", "0.5", GetDisabledState() && PickerVariant == PickerVariant.Static)
+                .AddStyle("pointer-events", "none", GetDisabledState() && PickerVariant == PickerVariant.Static)
+                .AddStyle("filter", "grayscale(1)", GetDisabledState() && PickerVariant == PickerVariant.Static)
                 .AddStyle(Style)
                 .Build();
 
@@ -207,11 +213,21 @@ namespace MudBlazor
         /// </summary>
         /// <remarks>
         /// Defaults to <c>false</c>.<br />
-        /// When <c>true</c>, an icon is displayed which, when clicked, clears the Text and Value.  Use the <c>ClearIcon</c> property to control the Clear button icon.
+        /// When <c>true</c>, an icon is displayed which, when clicked, clears the Text and Value.  Use the <see cref="ClearIcon"/> property to control the Clear button icon.
         /// </remarks>
         [Parameter]
         [Category(CategoryTypes.FormComponent.Behavior)]
         public bool Clearable { get; set; } = false;
+
+        /// <summary>
+        /// Custom clear icon when <see cref="Clearable"/> is enabled.
+        /// </summary>
+        /// <remarks>
+        /// Defaults to <see cref="Icons.Material.Filled.Clear"/>.
+        /// </remarks>
+        [Parameter]
+        [Category(CategoryTypes.FormComponent.Appearance)]
+        public string ClearIcon { get; set; } = Icons.Material.Filled.Clear;
 
         /// <summary>
         /// Prevents the user from interacting with this button.
@@ -435,12 +451,17 @@ namespace MudBlazor
         /// Prevents interaction with background elements while the picker is open.
         /// </summary>
         /// <remarks>
-        /// <para>Defaults to <c>true</c>.</para>
+        /// <para>Defaults to <see cref="PopoverOptions.ModalOverlay" />.</para>
         /// <para>Only possible to set to <c>false</c> when <see cref="PickerVariant"/> is <see cref="PickerVariant.Inline"/>.</para>
         /// </remarks>
         [Parameter]
         [Category(CategoryTypes.FormComponent.Behavior)]
-        public bool Modal { get; set; } = MudGlobal.PopoverDefaults.ModalOverlay;
+        public bool? Modal { get; set; }
+
+        /// <summary>
+        /// Gets the resolved modal overlay value, using the global default from <see cref="PopoverOptions"/> if not explicitly set.
+        /// </summary>
+        protected bool GetModal() => Modal ?? PopoverService.PopoverOptions.ModalOverlay;
 
         /// <summary>
         /// The location the popover opens, relative to its container.
@@ -461,16 +482,6 @@ namespace MudBlazor
         [Parameter]
         [Category(CategoryTypes.Popover.Appearance)]
         public Origin TransformOrigin { get; set; } = Origin.TopLeft;
-
-        /// <summary>
-        /// The behavior of the popover when it overflows its container.
-        /// </summary>
-        /// <remarks>
-        /// Defaults to <see cref="OverflowBehavior.FlipOnOpen"/>.
-        /// </remarks>
-        [Parameter]
-        [Category(CategoryTypes.Popover.Appearance)]
-        public OverflowBehavior OverflowBehavior { get; set; } = OverflowBehavior.FlipOnOpen;
 
         /// <summary>
         /// Determines the width of the Popover dropdown in relation the parent container.
@@ -731,7 +742,7 @@ namespace MudBlazor
                     if (args.CtrlKey && args.ShiftKey)
                     {
                         await ClearAsync();
-                        await WriteValueAsync(default);
+                        await SetValueAsync(default);
                         await ResetAsync();
                     }
 

@@ -35,8 +35,8 @@
                        Error="@ErrorState.Value"
                        ErrorText="@ErrorTextState.Value"
                        Clearable="@(Clearable && !GetReadOnlyState())"
+                       ClearIcon="@ClearIcon"
                        OnClearButtonClick="@(async () => await ClearAsync())"
-                       TextUpdateSuppression="@(Editable && !GetReadOnlyState())"
                        Typo="@Typo"
                        ShrinkLabel="@ShrinkLabel"
                        KeyDownPreventDefault="Open"
@@ -65,7 +65,7 @@
                 }
                 @if (PickerVariant == PickerVariant.Inline)
                 {
-                    <MudPopover Class="@PopoverClassname" Open="@Open" Fixed="true" AnchorOrigin="@(AnchorOrigin)" TransformOrigin="@(TransformOrigin)" OverflowBehavior="@(OverflowBehavior)" RelativeWidth="@(RelativeWidth)" Paper="false">
+                    <MudPopover Class="@PopoverClassname" Open="@Open" Fixed="true" AnchorOrigin="@(AnchorOrigin)" TransformOrigin="@(TransformOrigin)" RelativeWidth="@(RelativeWidth)" Paper="false">
                         <div @ref="_pickerInlineRef" class="@PickerInlineClassname">
                             <MudPaper @attributes="UserAttributes" Class="@PickerPaperClassname" Style="@PickerPaperStylename" Square="@_pickerSquare">
                                 <div class="@PickerContainerClassname">
@@ -125,7 +125,7 @@
             {
                 <MudOverlay Visible="@Open"
                             AutoClose
-                            Modal="@Modal"
+                            Modal="@GetModal()"
                             OnClosed="CloseOverlayAsync"
                             LockScroll="false"/>
             }

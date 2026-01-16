@@ -25,7 +25,7 @@
                            Placement="@Adornment.Start" />
     }
 
-    @if (AutoGrow || Lines > 1)
+    @if (ShouldUseTextArea)
     {
         <textarea class="@InputClassname"
                   @ref="ElementReference"
@@ -36,14 +36,14 @@
                   placeholder="@Placeholder"
                   disabled=@GetDisabledState()
                   readonly="@GetReadOnlyState()"
-                  inputmode="@InputMode.ToDescriptionString()"
+                  inputmode="@InputMode.ToStringFast(true)"
                   @onblur="@OnBlurredAsync"
-                  @oninput="OnInput"
-                  @onchange="OnChange"
+                  @bind:event="@(Immediate ? "oninput" : "onchange")"
+                  @bind:get="@_internalText"
+                  @bind:set="@OnInputOrOnChangeAsync"
                   @onkeydown="@InvokeKeyDownAsync"
                   @onkeyup="@InvokeKeyUpAsync"
                   @onpaste="@OnPaste"
-                  value="@_internalText"
                   maxlength="@MaxLength"
                   @onkeydown:preventDefault="@KeyDownPreventDefault"
                   @onkeyup:preventDefault="@KeyUpPreventDefault"
@@ -63,14 +63,14 @@
                @attributes="UserAttributes"
                id="@InputElementId"
                type="@InputTypeString"
-               value="@_internalText"
-               @oninput="OnInput"
-               @onchange="OnChange"
+               @bind:event="@(Immediate ? "oninput" : "onchange")"
+               @bind:get="@_internalText"
+               @bind:set="@OnInputOrOnChangeAsync"
                @onblur="@OnBlurredAsync"
                placeholder="@Placeholder"
                disabled=@GetDisabledState()
                readonly="@GetReadOnlyState()"
-               inputmode="@(InputType == InputType.Number ? null : InputMode.ToDescriptionString())"
+               inputmode="@(InputType == InputType.Number ? null : InputMode.ToStringFast(true))"
                pattern="@Pattern"
                @onkeydown="@InvokeKeyDownAsync"
                @onkeyup="@InvokeKeyUpAsync"

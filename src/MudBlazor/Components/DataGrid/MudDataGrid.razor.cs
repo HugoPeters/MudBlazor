@@ -759,13 +759,18 @@ namespace MudBlazor
 
                 _items = value;
 
+                // Always clean up stale selections when Items is reassigned.
+                // For INotifyCollectionChanged (e.g., ObservableCollection), the event handler
+                // additionally handles incremental changes (add/remove without reassigning).
+                CleanupStaleSelections();
+                CleanupStaleHierarchyExpansions();
+
                 OnPagerStateChanged();
                 SetupGrouping();
                 ApplyInitialExpansionForItems(_items);
                 SetupCollectionChangeTracking();
             }
         }
-
 
         private void OnPagerStateChanged()
         {
@@ -785,7 +790,7 @@ namespace MudBlazor
             {
                 changed.CollectionChanged += (s, e) =>
                 {
-                    InvokeAsync(() =>
+                    InvokeAsync(async () =>
                     {
                         _currentRenderFilteredItemsCache = null;
 
@@ -793,10 +798,175 @@ namespace MudBlazor
                             GroupItems();
 
                         ApplyInitialExpansionForNewItems(e);
+                        await CleanupRemovedItemsAsync(e);
                         StateHasChanged();
                     });
                 };
             }
+        }
+
+        private async Task CleanupRemovedItemsAsync(NotifyCollectionChangedEventArgs e)
+        {
+            if (e.Action == NotifyCollectionChangedAction.Reset)
+            {
+                // For reset, check all items in selection against the current items
+                await CleanupStaleSelectionsAsync();
+                CleanupStaleHierarchyExpansions();
+                return;
+            }
+
+            if (e.OldItems is null)
+                return;
+
+            // Build a set of removed items for efficient lookup
+            var removedItems = new HashSet<T>(e.OldItems.Cast<T>(), Comparer);
+
+            // Directly check removed items against selection (more efficient for small removals)
+            var (selectionChanged, selectedItemChanged) = PruneSelectionFromRemovedItems(removedItems);
+
+            // Handle SelectedItem reset if needed
+            if (selectedItemChanged)
+            {
+                await _selectedItemState.SetValueAsync(default);
+            }
+
+            // Clean up hierarchy expansions for removed items
+            PruneHierarchyExpansions(removedItems);
+
+            if (selectionChanged)
+            {
+                await FireSelectionChangedEventsAsync();
+            }
+        }
+
+        private async Task CleanupStaleSelectionsAsync()
+        {
+            if (Selection.Count == 0 && _selectedItemState.Value is null)
+                return;
+
+            var currentItems = BuildCurrentItemsSet();
+            var (selectionChanged, selectedItemChanged) = PruneSelectionAndSelectedItem(currentItems);
+
+            if (!selectionChanged && !selectedItemChanged)
+                return;
+
+            if (selectedItemChanged)
+            {
+                await _selectedItemState.SetValueAsync(default);
+            }
+
+            if (selectionChanged)
+            {
+                await FireSelectionChangedEventsAsync();
+            }
+        }
+
+        /// <summary>
+        /// Synchronous version of CleanupStaleSelectionsAsync for use in property setters.
+        /// </summary>
+        private void CleanupStaleSelections()
+        {
+            if (Selection.Count == 0 && _selectedItemState.Value is null)
+                return;
+
+            var currentItems = BuildCurrentItemsSet();
+            var (selectionChanged, selectedItemChanged) = PruneSelectionAndSelectedItem(currentItems);
+
+            if (!selectionChanged && !selectedItemChanged)
+                return;
+
+            // Fire and forget with proper exception handling
+            if (selectedItemChanged)
+            {
+                InvokeAsync(() => _selectedItemState.SetValueAsync(default)).CatchAndLog();
+            }
+
+            if (selectionChanged)
+            {
+                InvokeAsync(FireSelectionChangedEventsAsync).CatchAndLog();
+            }
+        }
+
+        private void CleanupStaleHierarchyExpansions()
+        {
+            if (_openHierarchies.Count == 0 && _initialExpansions.Count == 0)
+                return;
+
+            var currentItems = BuildCurrentItemsSet();
+            PruneHierarchyExpansionsFromCurrentItems(currentItems);
+        }
+
+        /// <summary>
+        /// Builds a HashSet of current items from the data source.
+        /// </summary>
+        private HashSet<T> BuildCurrentItemsSet()
+        {
+            return _items is not null ? new HashSet<T>(_items, Comparer) : new HashSet<T>(Comparer);
+        }
+
+        /// <summary>
+        /// Removes items from Selection that are not present in currentItems.
+        /// Returns a tuple indicating whether Selection changed and whether SelectedItem needs to be reset.
+        /// </summary>
+        private (bool SelectionChanged, bool SelectedItemChanged) PruneSelectionAndSelectedItem(HashSet<T> currentItems)
+        {
+            var selectionChanged = Selection.RemoveWhere(s => !currentItems.Contains(s)) > 0;
+
+            // Check if SelectedItem needs to be reset
+            var selectedItemChanged = _selectedItemState.Value is not null && !currentItems.Contains(_selectedItemState.Value);
+
+            return (selectionChanged, selectedItemChanged);
+        }
+
+        /// <summary>
+        /// Removes items from Selection that are present in removedItems.
+        /// More efficient when a small number of items are removed from a large collection.
+        /// </summary>
+        private (bool SelectionChanged, bool SelectedItemChanged) PruneSelectionFromRemovedItems(HashSet<T> removedItems)
+        {
+            var selectionChanged = false;
+            foreach (var item in removedItems)
+            {
+                if (Selection.Remove(item))
+                {
+                    selectionChanged = true;
+                }
+            }
+
+            // Check if SelectedItem needs to be reset
+            var selectedItemChanged = _selectedItemState.Value is not null && removedItems.Contains(_selectedItemState.Value);
+
+            return (selectionChanged, selectedItemChanged);
+        }
+
+        /// <summary>
+        /// Removes items from _openHierarchies and _initialExpansions that are present in the removedItems set.
+        /// Used when specific items are removed from the collection.
+        /// </summary>
+        private void PruneHierarchyExpansions(HashSet<T> removedItems)
+        {
+            _openHierarchies.ExceptWith(removedItems);
+            _initialExpansions.ExceptWith(removedItems);
+        }
+
+        /// <summary>
+        /// Removes items from _openHierarchies and _initialExpansions that are not present in currentItems.
+        /// Used when checking against the full current items set.
+        /// </summary>
+        private void PruneHierarchyExpansionsFromCurrentItems(HashSet<T> currentItems)
+        {
+            _openHierarchies.RemoveWhere(h => !currentItems.Contains(h));
+            _initialExpansions.RemoveWhere(e => !currentItems.Contains(e));
+        }
+
+        /// <summary>
+        /// Fires SelectedItemsChanged event and invokes SelectedItemsChangedEvent.
+        /// </summary>
+        private async Task FireSelectionChangedEventsAsync()
+        {
+            await _selectedItemsState.SetValueAsync(Selection);
+            await SelectedItemsChanged.InvokeAsync(Selection);
+            SelectedItemsChangedEvent?.Invoke(Selection);
         }
 
         private void ApplyInitialExpansionForNewItems(NotifyCollectionChangedEventArgs e)
@@ -826,7 +996,6 @@ namespace MudBlazor
                 }
             }
         }
-
 
         /// <summary>
         /// Shows a loading animation while querying data.
@@ -1232,7 +1401,6 @@ namespace MudBlazor
         /// </summary>
         public IEnumerable<T> ServerItems => _serverData.Items;
 
-
         /// <summary>
         /// Defines the ItemsProviderDelegate property, which is necessary for implementing the ServerData methodology with Virtualization.
         /// This property is used to populate items virtually from the server.
@@ -1428,7 +1596,7 @@ namespace MudBlazor
         /// <returns><see langword="true"/> when the cell can be displayed</returns>
         private static bool IsFooterCellDisplayable(Column<T> column)
         {
-            return !column.HiddenState.Value && (column.FooterTemplate != null || column.AggregateDefinition != null);
+            return !column.HiddenState.Value && (column.GetFooterTemplate() != null || column.AggregateDefinition != null);
         }
 
         protected IEnumerable<T> GetItemsOfPage(int page, int pageSize)
@@ -1664,6 +1832,11 @@ namespace MudBlazor
 
         internal async Task SetSelectedItemAsync(bool value, T item)
         {
+            var selectColumn = RenderedColumns.OfType<SelectColumn<T>>().FirstOrDefault();
+
+            if (selectColumn?.DisabledFunc?.Invoke(item) is true)
+                return; // Do not change selection if the item is disabled
+
             if (value)
             {
                 if (!MultiSelection)
@@ -1725,14 +1898,20 @@ namespace MudBlazor
             if (!MultiSelection)
                 return;
 
-            var items = HasServerData
-                    ? ServerItems
-                    : FilteredItems;
+            Selection.Clear(); // Clear selection first, regardless of selecting or unselecting all.
 
-            Selection.Clear();
-            if (value)
+            if (value) // Logic for selecting all
             {
-                Selection.UnionWith(items);
+                var itemsToSelect = HasServerData ? ServerItems : FilteredItems;
+
+                var selectColumn = RenderedColumns.OfType<SelectColumn<T>>().FirstOrDefault();
+                if (selectColumn?.DisabledFunc != null)
+                {
+                    // Filter out disabled items before adding to selection
+                    itemsToSelect = itemsToSelect.Where(item => !selectColumn.DisabledFunc(item));
+                }
+
+                Selection.UnionWith(itemsToSelect);
             }
 
             await InvokeAsync(async () => await _selectedItemsState.SetValueAsync(Selection));
@@ -2248,7 +2427,7 @@ namespace MudBlazor
                 DataGrid = this,
                 Selector = column.groupBy,
                 Expanded = expanded,
-                GroupTemplate = column.GroupTemplate,
+                GroupTemplate = column.GetGroupTemplate(),
                 Indentation = column.GroupIndented,
                 Title = column.Title,
                 Grouping = new EmptyGrouping<object?, T>(null), // Ensure Grouping is not null
@@ -2442,6 +2621,9 @@ namespace MudBlazor
                     await HierarchyVisibilityToggled.InvokeAsync(new(openedHierarchy, false));
                 }
                 _openHierarchies.Clear();
+                _openHierarchies.Add(item);
+                await InvokeAsync(StateHasChanged);
+                return;
             }
 
             // if item doesn't exist remove will return false and add the item
@@ -2457,7 +2639,6 @@ namespace MudBlazor
 
             await InvokeAsync(StateHasChanged);
         }
-
 
         #region Resize feature
 

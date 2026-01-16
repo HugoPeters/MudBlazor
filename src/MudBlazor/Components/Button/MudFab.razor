@@ -7,7 +7,7 @@
             Style="@Style"
             @attributes="UserAttributes"
             @onclick="this.AsNonRenderingEventHandler<MouseEventArgs>(OnClickHandler)"
-            type="@ButtonType.ToDescriptionString()"
+            type="@ButtonType.ToStringFast(true)"
             href="@Href"
             target="@Target"
             rel="@GetRel()"
@@ -19,16 +19,16 @@
         }
         else
         {
-    <span class="mud-fab-label">
-        @if (!string.IsNullOrWhiteSpace(StartIcon))
-            {
-                <MudIcon Disabled="@Disabled" Icon="@StartIcon" Color="@IconColor" Size="@IconSize" />
-            }
-            @Label
-            if (!string.IsNullOrWhiteSpace(EndIcon))
-            {
-                <MudIcon Disabled="@Disabled" Icon="@EndIcon" Color="@IconColor" Size="@IconSize" />
-            }
-        </span>
-    }
+            <span class="mud-fab-label">
+                @if (!string.IsNullOrWhiteSpace(StartIcon))
+                {
+                    <MudIcon Disabled="@Disabled" Icon="@StartIcon" Color="@IconColor" Size="@IconSize"/>
+                }
+                @Label
+                @if (!string.IsNullOrWhiteSpace(EndIcon))
+                {
+                    <MudIcon Disabled="@Disabled" Icon="@EndIcon" Color="@IconColor" Size="@IconSize"/>
+                }
+            </span>
+        }
 </MudElement>

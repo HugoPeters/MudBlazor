@@ -1,5 +1,5 @@
-﻿using Bunit;
-using FluentAssertions;
+﻿using AwesomeAssertions;
+using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
@@ -233,29 +233,20 @@ namespace MudBlazor.UnitTests.Components
         [Test]
         public async Task InlineDialog_Should_UpdateIsVisibleOnClose()
         {
-            await ImproveChanceOfSuccess(async () =>
-            {
-                var comp = Context.Render<MudDialogProvider>();
-                comp.Markup.Trim().Should().BeEmpty();
-                var service = Context.Services.GetRequiredService<IDialogService>();
-                service.Should().NotBe(null);
-                // displaying the component with the inline dialog only renders the open button
-                var comp1 = Context.Render<InlineDialogIsVisibleStateTest>();
-                // open the dialog
-                comp1.Find("button").Click();
-                await comp.WaitForAssertionAsync(() => comp.Find("div.mud-dialog-container").Should().NotBe(null));
-                // close by click outside
-                comp.Find("div.mud-overlay").Click();
-                await comp.WaitForAssertionAsync(() => comp.Markup.Trim().Should().BeEmpty(), TimeSpan.FromSeconds(5));
-                // open again
-                comp1.Find("button").Click();
-                await comp.WaitForAssertionAsync(() => comp.Find("div.mud-dialog-container").Should().NotBe(null),
-                    TimeSpan.FromSeconds(5));
-                // close again by click outside
-                await comp.WaitForAssertionAsync(() => comp.Find("div.mud-overlay").Should().NotBeNull());
-                comp.Find("div.mud-overlay").Click();
-                await comp.WaitForAssertionAsync(() => comp.Markup.Trim().Should().BeEmpty(), TimeSpan.FromSeconds(5));
-            });
+            var comp = Context.Render<MudDialogProvider>();
+            comp.Markup.Trim().Should().BeEmpty();
+            var service = Context.Services.GetRequiredService<IDialogService>();
+            service.Should().NotBe(null);
+            var comp1 = Context.Render<InlineDialogIsVisibleStateTest>();
+            comp1.Find("button").Click();
+            await comp.WaitForAssertionAsync(() => comp.Find("div.mud-dialog-container").Should().NotBe(null));
+            comp.WaitForElement("div.mud-overlay").Click();
+            await comp.WaitForAssertionAsync(() => comp.Markup.Trim().Should().BeEmpty(), TimeSpan.FromSeconds(5));
+            comp1.Find("button").Click();
+            await comp.WaitForAssertionAsync(() => comp.Find("div.mud-dialog-container").Should().NotBe(null),
+                TimeSpan.FromSeconds(5));
+            comp.WaitForElement("div.mud-overlay").Click();
+            await comp.WaitForAssertionAsync(() => comp.Markup.Trim().Should().BeEmpty(), TimeSpan.FromSeconds(5));
         }
 
         /// <summary>
@@ -1432,6 +1423,73 @@ namespace MudBlazor.UnitTests.Components
                     args[0] is ElementReference &&
                     args[1] is bool)),
                 Times.AtMost(2)); // Focus should be called once when dialog opens and once for refocus after backdrop click
+        }
+
+        /// <summary>
+        /// Test that DefaultFocus property on MudDialogProvider is properly cascaded to dialogs
+        /// </summary>
+        [Test]
+        public async Task DialogProvider_DefaultFocus_ShouldCascadeToDialogs()
+        {
+            // Arrange - Create a DialogProvider with DefaultFocus set to None
+            var comp = Context.Render<MudDialogProvider>(parameters => parameters
+                .Add(p => p.DefaultFocus, DefaultFocus.None));
+            var service = Context.Services.GetRequiredService<IDialogService>();
+
+            // Act - Show a dialog without explicitly setting DefaultFocus
+            IDialogReference dialogReference = null;
+            await comp.InvokeAsync(async () => dialogReference = await service.ShowAsync<DialogWithDefaultFocusTest>());
+
+            // Assert - Verify the dialog is shown
+            dialogReference.Should().NotBeNull();
+            comp.Find("div.mud-dialog-container").Should().NotBeNull();
+
+            // Close the dialog
+            await comp.InvokeAsync(() => service.Close(dialogReference));
+        }
+
+        /// <summary>
+        /// Test that MudDialog respects explicit DefaultFocus parameter over global setting
+        /// </summary>
+        [Test]
+        public async Task Dialog_ExplicitDefaultFocus_ShouldOverrideGlobalSetting()
+        {
+            // Arrange - Create a DialogProvider with DefaultFocus set to None
+            var comp = Context.Render<MudDialogProvider>(parameters => parameters
+                .Add(p => p.DefaultFocus, DefaultFocus.None));
+            var service = Context.Services.GetRequiredService<IDialogService>();
+
+            // Act - Show a dialog WITH explicitly setting DefaultFocus to FirstChild
+            var dialogParameters = new DialogParameters
+            {
+                [nameof(MudDialog.DefaultFocus)] = DefaultFocus.FirstChild
+            };
+            IDialogReference dialogReference = null;
+            await comp.InvokeAsync(async () => dialogReference = await service.ShowAsync<DialogWithDefaultFocusTest>(title: "Test", parameters: dialogParameters));
+
+            // Assert - Verify the dialog is shown
+            dialogReference.Should().NotBeNull();
+            comp.Find("div.mud-dialog-container").Should().NotBeNull();
+
+            // Close the dialog
+            await comp.InvokeAsync(() => service.Close(dialogReference));
+        }
+
+        [Test]
+        public async Task CloseButton_ShouldHavePreventDefaultOnMouseDownAttribute()
+        {
+            // Arrange
+            var comp = Context.Render<MudDialogProvider>();
+            var service = Context.Services.GetRequiredService<IDialogService>();
+
+            // Act
+            await comp.InvokeAsync(async () =>
+                await service.ShowAsync<DialogOkCancel>("Custom title", new DialogOptions { CloseButton = true }));
+
+            // Assert
+            var closeBtn = comp.Find(".mud-button-close");
+            closeBtn.Should().NotBeNull();
+            closeBtn.GetAttribute("blazor:onmousedown:preventdefault").Should().Be("");
         }
     }
     internal class CustomDialogService : DialogService
