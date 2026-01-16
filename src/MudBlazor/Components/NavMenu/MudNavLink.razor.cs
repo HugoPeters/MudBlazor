@@ -26,6 +26,7 @@ namespace MudBlazor
 
         protected string LinkClassname =>
             new CssBuilder("mud-nav-link")
+                .AddClass(ActiveClass, Active)
                 .AddClass($"mud-nav-link-disabled", Disabled)
                 .AddClass($"mud-ripple", Ripple && !Disabled)
                 .Build();
@@ -113,6 +114,9 @@ namespace MudBlazor
         [Parameter]
         [Category(CategoryTypes.General.Behavior)]
         public bool Disabled { get; set; }
+        
+        [Parameter]
+        public bool Active { get; set; }
 
         /// <summary>
         /// Shows a ripple effect when the user clicks this link.

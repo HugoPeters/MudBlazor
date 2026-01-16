@@ -29,6 +29,7 @@ namespace MudBlazor
                 .AddClass($"mud-progress-{Size.ToDescriptionString()}")
                 .AddClass("mud-progress-indeterminate", Indeterminate)
                 .AddClass("mud-progress-static", !Indeterminate)
+                .AddClass("overflow-hidden")
                 .AddClass(Class)
                 .Build();
 
