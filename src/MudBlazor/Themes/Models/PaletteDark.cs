@@ -62,6 +62,10 @@ namespace MudBlazor
 
         /// <inheritdoc />
         public override MudColor DrawerBackground { get; set; } = "#27272f";
+        
+        public override MudColor PropertiesDrawerBackground { get; set; } = Colors.Shades.White;
+        
+        public override MudColor DialogBackground { get; set; } = Colors.Shades.White;
 
         /// <inheritdoc />
         public override MudColor DrawerText { get; set; } = "rgba(255,255,255, 0.50)";

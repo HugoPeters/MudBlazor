@@ -336,6 +336,8 @@ partial class MudThemeProvider : ComponentBaseWithState, IAsyncDisposable
         theme.AppendLine($"--{Palette}-background: {palette.Background};");
         theme.AppendLine($"--{Palette}-background-gray: {palette.BackgroundGray};");
         theme.AppendLine($"--{Palette}-drawer-background: {palette.DrawerBackground};");
+        theme.AppendLine($"--{Palette}-properties-drawer-background: {palette.PropertiesDrawerBackground};");
+        theme.AppendLine($"--{Palette}-dialog-bg: {palette.DialogBackground};");
         theme.AppendLine($"--{Palette}-drawer-text: {palette.DrawerText};");
         theme.AppendLine($"--{Palette}-drawer-icon: {palette.DrawerIcon};");
         theme.AppendLine($"--{Palette}-appbar-background: {palette.AppbarBackground};");

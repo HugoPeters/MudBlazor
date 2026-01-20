@@ -171,6 +171,10 @@ namespace MudBlazor
         /// The drawer background color.
         /// </summary>
         public virtual MudColor DrawerBackground { get; set; } = Colors.Shades.White;
+        
+        public virtual MudColor DialogBackground { get; set; } = Colors.Shades.White;
+        
+        public virtual MudColor PropertiesDrawerBackground { get; set; } = Colors.Shades.White;
 
         /// <summary>
         /// The drawer text color.
