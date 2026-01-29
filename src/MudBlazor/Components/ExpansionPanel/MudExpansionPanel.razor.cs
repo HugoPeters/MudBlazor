@@ -42,7 +42,12 @@ namespace MudBlazor
             new CssBuilder("mud-expand-panel-content")
                 .AddClass("mud-expand-panel-gutters", Gutters && Parent?.Gutters != false)
                 .AddClass("mud-expand-panel-dense", Dense || Parent?.Dense == true)
+                .AddClass(ContentClass)
                 .Build();
+        
+        [Parameter]
+        [Category(CategoryTypes.ComponentBase.Common)]
+        public string? ContentClass { get; set; }
 
         /// <summary>
         /// The maximum allowed height, in pixels.
