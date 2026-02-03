@@ -116,6 +116,7 @@ namespace MudBlazor
                 .AddClass("mud-dialog-fullscreen", GetFullScreen())
                 .AddClass("mud-dialog-rtl", RightToLeft)
                 .AddClass(_dialog?.Class)
+                .AddClass(_dialog?.AnimationClass)
                 .Build();
 
         protected string BackgroundClassname =>

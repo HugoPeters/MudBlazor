@@ -389,6 +389,9 @@ namespace MudBlazor
         [Category(CategoryTypes.FormComponent.Behavior)]
         public bool InvertMouseWheel { get; set; } = false;
 
+        [Parameter] 
+        public bool UseSpinButtons { get; set; } = false;
+
         /// <summary>
         /// The minimum allowed value.
         /// </summary>

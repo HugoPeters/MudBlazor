@@ -7,7 +7,7 @@
     {
         <span class="@WrapperClass">
             <span role="status" aria-live="polite" aria-label="@BadgeAriaLabel" class="@BadgeClassname" @onclick="this.AsNonRenderingEventHandler<MouseEventArgs>(HandleBadgeClick)">
-                @if (BadgeContent != null)
+                @if (BadgeContent == null)
                 {
                     if (!Dot)
                     {
@@ -20,6 +20,7 @@
                             @_content
                         }
                     }
+                    
                 }
                 else
                 {

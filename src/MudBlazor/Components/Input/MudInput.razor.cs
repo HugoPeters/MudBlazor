@@ -75,6 +75,9 @@ namespace MudBlazor
         /// The reference to the HTML element for this component.
         /// </summary>
         public ElementReference ElementReference { get; private set; }
+        
+        [Parameter] 
+        public bool UseSpinButtons { get; set; } = false;
 
         /// <summary>
         /// Occurs when the <c>Up</c> arrow button is clicked.

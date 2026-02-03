@@ -163,6 +163,9 @@ namespace MudBlazor
         [Parameter]
         [Category(CategoryTypes.Dialog.Appearance)]
         public string? ContentStyle { get; set; }
+        
+        [Parameter]
+        public string? AnimationClass { get; set; } = "mud-dialog-open-center";
 
         /// <summary>
         /// For inline dialogs, shows this dialog.
@@ -229,6 +232,7 @@ namespace MudBlazor
                     [nameof(ActionsClass)] = ActionsClass,
                     [nameof(ContentStyle)] = ContentStyle,
                     [nameof(DefaultFocus)] = DefaultFocus,
+                    [nameof(AnimationClass)] = AnimationClass,
                 };
 #pragma warning restore CS0618 // Type or member is obsolete
 
