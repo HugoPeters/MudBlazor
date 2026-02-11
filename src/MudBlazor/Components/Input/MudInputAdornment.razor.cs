@@ -33,6 +33,9 @@ public partial class MudInputAdornment
     /// </summary>
     [Parameter]
     public string? Text { get; set; }
+    
+    [Parameter]
+    public Typo Typo { get; set; }
 
     /// <summary>
     /// The icon for this adornment.
