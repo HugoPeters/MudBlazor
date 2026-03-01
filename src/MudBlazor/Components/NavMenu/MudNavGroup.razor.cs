@@ -156,6 +156,10 @@ namespace MudBlazor
         [Parameter]
         [Category(CategoryTypes.NavMenu.Appearance)]
         public bool HideExpandIcon { get; set; }
+        
+        [Parameter]
+        [Category(CategoryTypes.NavMenu.Appearance)]
+        public bool HideTitle { get; set; }
 
         /// <summary>
         /// The maximum height, in pixels, of this group.
