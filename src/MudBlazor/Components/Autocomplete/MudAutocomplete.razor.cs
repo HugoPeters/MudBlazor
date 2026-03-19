@@ -339,7 +339,7 @@ namespace MudBlazor
 
         [Parameter]
         [Category(CategoryTypes.FormComponent.ListBehavior)]
-        public RenderFragment? CustomItemsTemplate { get; set; }
+        public RenderFragment<T[]?>? CustomItemsTemplate { get; set; }
 
         /// <summary>
         /// The custom template used for the progress indicator when <see cref="ShowProgressIndicator"/> is <c>true</c>.
