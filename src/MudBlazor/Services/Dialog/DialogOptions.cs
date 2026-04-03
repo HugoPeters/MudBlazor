@@ -24,6 +24,9 @@ namespace MudBlazor
         internal static readonly DialogOptions Default = new();
 
         public bool Drawer { get; set; }
+        
+        // for native dialogs (bottom sheet)
+        public int? InitialHeight { get; set; }
 
         /// <summary>
         /// The location of the dialog.
