@@ -22,7 +22,14 @@
     }
     else
     {
-        <svg class="mud-progress-circular-svg" viewBox="@_viewBox">
+        @if (HasBackground)
+        {
+            <svg class="mud-progress-circular-svg mud-list-item-secondary-text" viewBox="@_viewBox" id="background" style="z-index: 0; position: absolute; opacity: 0.2">
+                <circle class="@SvgClassname" cx="44" cy="44" r="20" fill="none" stroke-width="@StrokeWidth" style="stroke-dasharray: @MagicNumber; stroke-dashoffset: 0;"></circle>
+            </svg>
+        }
+        
+        <svg class="mud-progress-circular-svg" viewBox="@_viewBox" style="z-index: 1">
             <circle class="@SvgClassname" cx="44" cy="44" r="20" fill="none" stroke-width="@StrokeWidth" style="stroke-dasharray: @MagicNumber; stroke-dashoffset: @_svgValue;"></circle>
         </svg>
 

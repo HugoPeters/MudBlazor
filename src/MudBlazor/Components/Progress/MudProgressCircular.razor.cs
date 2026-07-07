@@ -110,6 +110,9 @@ namespace MudBlazor
         [Parameter, ParameterState]
         [Category(CategoryTypes.ProgressCircular.Behavior)]
         public double Value { get; set; }
+        
+        [Parameter]
+        public bool HasBackground { get; set; }
 
         /// <summary>
         /// The thickness of the circle.

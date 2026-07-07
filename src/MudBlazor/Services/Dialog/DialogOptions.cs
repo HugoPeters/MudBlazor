@@ -25,6 +25,8 @@ namespace MudBlazor
 
         public bool Drawer { get; set; }
 
+        public int? InitialHeight { get; set; } = 700;
+        
         /// <summary>
         /// The location of the dialog.
         /// </summary>

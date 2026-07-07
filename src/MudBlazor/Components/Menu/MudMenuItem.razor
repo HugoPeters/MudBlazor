@@ -6,8 +6,8 @@
             Style="@Style"
             href="@Href"
             target="@Target"
-            PreventDefault="GetDisabled()"
-            ClickPropagation="false"
+            PreventDefault=@(GetDisabled() || PreventDefault)
+            ClickPropagation=@PreventDefault
             @attributes="UserAttributes"
             @onclick="OnClickHandlerAsync"
             @bind-Ref="ElementReference"

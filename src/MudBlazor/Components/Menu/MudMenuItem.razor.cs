@@ -110,6 +110,11 @@ namespace MudBlazor
         [Category(CategoryTypes.Menu.ClickAction)]
         public bool AutoClose { get; set; } = true;
 
+        
+        [Parameter]
+        [Category(CategoryTypes.Menu.ClickAction)]
+        public bool PreventDefault { get; set; }
+
         /// <summary>
         /// Occurs when this menu item is clicked.
         /// </summary>
